@@ -24,7 +24,8 @@
 ---
 
 <img src="docs/screenshots/landing-page.png" alt="Multi-Agent Orchestrator Landing Page" width="900" />
-
+<img src="docs/screenshots/pipeline-running.png" alt="Multi-Agent Orchestrator Landing Page" width="900" />
+<img src="docs/screenshots/pipeline-complete.png" alt="Multi-Agent Orchestrator Landing Page" width="900" />
 </div>
 
 ---
