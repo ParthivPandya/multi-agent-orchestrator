@@ -1,8 +1,9 @@
 <div align="center">
 
-# 🤖 Multi-Agent Orchestrator
+# 🚀 Multi-Agent AI Orchestrator
+Autonomous AI Agents for End-to-End Software Development
 
-### AI-Powered Software Development Pipeline — Now with 6 Agents
+### Multi-Agent AI system that converts natural language requirements into production-ready code using autonomous AI agents for planning, development, review, testing, and deployment.
 
 [![Next.js](https://img.shields.io/badge/Next.js-16-black?style=for-the-badge&logo=next.js&logoColor=white)](https://nextjs.org/)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.0-3178C6?style=for-the-badge&logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
@@ -16,6 +17,14 @@
 [![License](https://img.shields.io/badge/License-MIT-22C55E?style=flat-square)](LICENSE)
 
 **Transform plain English requirements into production-ready, tested, and deployment-configured code** — automatically analyzed, planned, developed, reviewed, tested, and deployed by **6 specialized AI agents** working in concert.
+
+Features
+• AI requirement analysis
+• Automated architecture planning
+• AI code generation
+• AI code review
+• Automated testing
+• Deployment configuration
 
 ### 🌟 If you find this useful, please give it a star! It helps the project grow! 🌟
 
