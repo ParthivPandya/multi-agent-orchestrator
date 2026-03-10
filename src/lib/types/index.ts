@@ -9,6 +9,7 @@ export type AgentName =
   | 'task-planner'
   | 'developer'
   | 'code-reviewer'
+  | 'testing-agent'
   | 'deployment-agent';
 
 export interface AgentResult {
@@ -19,6 +20,7 @@ export interface AgentResult {
   model: string;
   tokensUsed?: number;
   iterationNumber?: number;
+  latencyMs?: number;
   error?: string;
 }
 
@@ -28,6 +30,7 @@ export interface PipelineState {
   tasks: AgentResult | null;
   code: AgentResult | null;
   review: AgentResult | null;
+  tests: AgentResult | null;
   deployment: AgentResult | null;
   currentAgent: AgentName | null;
   isComplete: boolean;
@@ -75,7 +78,15 @@ export interface ReviewOutput {
 
 // Pipeline event for streaming updates to the frontend
 export interface PipelineEvent {
-  type: 'stage_start' | 'stage_complete' | 'stage_error' | 'pipeline_complete' | 'iteration_info' | 'final_result';
+  type:
+  | 'stage_start'
+  | 'stage_complete'
+  | 'stage_error'
+  | 'pipeline_complete'
+  | 'iteration_info'
+  | 'final_result'
+  | 'retry_attempt'
+  | 'pipeline_paused';
   stage?: string;
   agentName?: AgentName;
   status?: AgentStatus;
@@ -87,6 +98,9 @@ export interface PipelineEvent {
   error?: string;
   success?: boolean;
   results?: Record<string, AgentResult>;
+  retryAttempt?: number;
+  maxRetries?: number;
+  latencyMs?: number;
 }
 
 // API Request/Response types
@@ -109,6 +123,31 @@ export interface AgentConfig {
   icon: string;
   color: string;
   maxTokens: number;
+}
+
+// Pipeline history — persisted runs
+export interface PipelineHistoryEntry {
+  id: string;
+  requirement: string;
+  timestamp: string;
+  success: boolean;
+  totalTokens: number;
+  totalLatencyMs: number;
+  agentResults: Record<string, AgentResult>;
+  projectName: string;
+}
+
+// Analytics per pipeline run
+export interface PipelineAnalytics {
+  totalTokens: number;
+  totalLatencyMs: number;
+  agentBreakdown: {
+    agentName: AgentName;
+    tokens: number;
+    latencyMs: number;
+    cost: number; // estimated USD
+  }[];
+  estimatedCostUsd: number;
 }
 
 export const AGENT_CONFIGS: Record<AgentName, AgentConfig> = {
@@ -147,6 +186,15 @@ export const AGENT_CONFIGS: Record<AgentName, AgentConfig> = {
     icon: '🔎',
     color: '#f59e0b',
     maxTokens: 2048,
+  },
+  'testing-agent': {
+    name: 'testing-agent',
+    displayName: 'Testing Agent',
+    description: 'Auto-generates unit & integration tests for the code',
+    model: 'llama-3.3-70b-versatile',
+    icon: '🧪',
+    color: '#ec4899',
+    maxTokens: 3072,
   },
   'deployment-agent': {
     name: 'deployment-agent',

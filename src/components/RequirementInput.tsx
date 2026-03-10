@@ -6,6 +6,7 @@ interface RequirementInputProps {
     onSubmit: (requirement: string) => void;
     isRunning: boolean;
     onStop?: () => void;
+    initialValue?: string;
 }
 
 const EXAMPLE_PROMPTS = [
@@ -16,8 +17,8 @@ const EXAMPLE_PROMPTS = [
     'Build a markdown-based blog platform with SSR',
 ];
 
-export default function RequirementInput({ onSubmit, isRunning, onStop }: RequirementInputProps) {
-    const [requirement, setRequirement] = useState('');
+export default function RequirementInput({ onSubmit, isRunning, onStop, initialValue }: RequirementInputProps) {
+    const [requirement, setRequirement] = useState(initialValue || '');
     const textareaRef = useRef<HTMLTextAreaElement>(null);
 
     useEffect(() => {

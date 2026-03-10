@@ -15,6 +15,7 @@ export async function runTaskPlanner(
     requirementsJson: string,
     context: AgentContext
 ): Promise<AgentResult> {
+    const startTime = Date.now();
     try {
         const groq = createGroq({ apiKey: process.env.GROQ_API_KEY! });
 
@@ -33,6 +34,7 @@ export async function runTaskPlanner(
             timestamp: new Date().toISOString(),
             model: config.model,
             tokensUsed: usage?.totalTokens,
+            latencyMs: Date.now() - startTime,
         };
 
         context.add(result);
@@ -44,6 +46,7 @@ export async function runTaskPlanner(
             output: '',
             timestamp: new Date().toISOString(),
             model: config.model,
+            latencyMs: Date.now() - startTime,
             error: error instanceof Error ? error.message : 'Unknown error occurred',
         };
 

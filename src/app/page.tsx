@@ -1,18 +1,22 @@
 'use client';
 
-import { useState, useRef, useCallback, useMemo } from 'react';
-import { AgentName, AgentStatus, AgentResult, PipelineEvent } from '@/lib/types';
+import { useState, useRef, useCallback, useMemo, useEffect } from 'react';
+import { AgentName, AgentStatus, AgentResult, PipelineEvent, PipelineHistoryEntry } from '@/lib/types';
 import { parseGeneratedFiles, ParsedFile } from '@/lib/fileParser';
+import { saveToHistory } from '@/lib/history';
 import RequirementInput from '@/components/RequirementInput';
 import PipelineView from '@/components/PipelineView';
 import OutputPanel from '@/components/OutputPanel';
 import WorkspaceViewer from '@/components/WorkspaceViewer';
+import AnalyticsPanel from '@/components/AnalyticsPanel';
+import HistoryPanel from '@/components/HistoryPanel';
 
 const INITIAL_STATUSES: Record<AgentName, AgentStatus> = {
   'requirements-analyst': 'idle',
   'task-planner': 'idle',
-  developer: 'idle',
+  'developer': 'idle',
   'code-reviewer': 'idle',
+  'testing-agent': 'idle',
   'deployment-agent': 'idle',
 };
 
@@ -22,6 +26,7 @@ const STAGE_TO_AGENT: Record<string, AgentName> = {
   tasks: 'task-planner',
   development: 'developer',
   review: 'code-reviewer',
+  testing: 'testing-agent',
   deployment: 'deployment-agent',
 };
 
@@ -36,7 +41,18 @@ export default function Home() {
   const [totalTokens, setTotalTokens] = useState(0);
   const [isSavingWorkspace, setIsSavingWorkspace] = useState(false);
   const [savedWorkspacePath, setSavedWorkspacePath] = useState<string | null>(null);
+  const [showAnalytics, setShowAnalytics] = useState(false);
+  const [retryInfo, setRetryInfo] = useState<string | null>(null);
+  const [currentRequirement, setCurrentRequirement] = useState('');
   const abortControllerRef = useRef<AbortController | null>(null);
+
+  // Clear retry info after a delay
+  useEffect(() => {
+    if (retryInfo) {
+      const t = setTimeout(() => setRetryInfo(null), 6000);
+      return () => clearTimeout(t);
+    }
+  }, [retryInfo]);
 
   const resetPipeline = useCallback(() => {
     setAgentStatuses({ ...INITIAL_STATUSES });
@@ -46,6 +62,8 @@ export default function Home() {
     setPipelineComplete(false);
     setTotalTokens(0);
     setSavedWorkspacePath(null);
+    setShowAnalytics(false);
+    setRetryInfo(null);
   }, []);
 
   const handleStop = useCallback(() => {
@@ -53,12 +71,36 @@ export default function Home() {
     setIsRunning(false);
   }, []);
 
+  // Restore a past pipeline run from history
+  const handleRestoreHistory = useCallback((entry: PipelineHistoryEntry) => {
+    resetPipeline();
+    setCurrentRequirement(entry.requirement);
+
+    const statusUpdates: Record<AgentName, AgentStatus> = { ...INITIAL_STATUSES };
+    const resultUpdates: Record<string, AgentResult | null> = {};
+
+    Object.entries(entry.agentResults).forEach(([key, result]) => {
+      if (result) {
+        statusUpdates[result.agentName] = result.status;
+        resultUpdates[result.agentName] = result;
+      }
+    });
+
+    setAgentStatuses(statusUpdates);
+    setAgentResults(resultUpdates);
+    setTotalTokens(entry.totalTokens);
+    setPipelineComplete(entry.success);
+    if (entry.success) setShowAnalytics(true);
+  }, [resetPipeline]);
+
   const handleSubmit = useCallback(async (requirement: string) => {
     resetPipeline();
     setIsRunning(true);
+    setCurrentRequirement(requirement);
 
     const controller = new AbortController();
     abortControllerRef.current = controller;
+    const runResults: Record<string, AgentResult> = {};
 
     try {
       const response = await fetch('/api/orchestrate', {
@@ -111,12 +153,14 @@ export default function Home() {
                   const result: AgentResult = {
                     agentName,
                     status: 'complete',
-                    output: event.output,
+                    output: event.output!,
                     timestamp: event.timestamp,
                     model: event.model || '',
                     iterationNumber: event.iteration,
+                    latencyMs: event.latencyMs,
                   };
                   setAgentResults(prev => ({ ...prev, [agentName]: result }));
+                  runResults[agentName] = result;
                   if (result.tokensUsed) {
                     setTotalTokens(prev => prev + (result.tokensUsed || 0));
                   }
@@ -143,6 +187,11 @@ export default function Home() {
                 break;
               }
 
+              case 'retry_attempt': {
+                setRetryInfo(event.output || null);
+                break;
+              }
+
               case 'iteration_info': {
                 if (event.iteration) {
                   setCurrentIteration(event.iteration);
@@ -152,22 +201,22 @@ export default function Home() {
 
               case 'pipeline_complete': {
                 setPipelineComplete(true);
+                setShowAnalytics(true);
                 break;
               }
 
               case 'final_result': {
                 if (event.results) {
-                  // Update all results from final payload
+                  const agentNameMap: Record<string, AgentName> = {
+                    requirements: 'requirements-analyst',
+                    tasks: 'task-planner',
+                    code: 'developer',
+                    review: 'code-reviewer',
+                    tests: 'testing-agent',
+                    deployment: 'deployment-agent',
+                  };
                   Object.entries(event.results).forEach(([key, result]) => {
                     if (result) {
-                      // Map result keys to agent names
-                      const agentNameMap: Record<string, AgentName> = {
-                        requirements: 'requirements-analyst',
-                        tasks: 'task-planner',
-                        code: 'developer',
-                        review: 'code-reviewer',
-                        deployment: 'deployment-agent',
-                      };
                       const agentName = agentNameMap[key];
                       if (agentName) {
                         setAgentResults(prev => ({ ...prev, [agentName]: result }));
@@ -175,11 +224,13 @@ export default function Home() {
                           ...prev,
                           [agentName]: result.status === 'error' ? 'error' : 'complete',
                         }));
+                        runResults[agentName] = result;
                       }
                     }
                   });
                 }
                 setPipelineComplete(true);
+                setShowAnalytics(true);
                 break;
               }
             }
@@ -196,8 +247,12 @@ export default function Home() {
       }
     } finally {
       setIsRunning(false);
+      // Persist the run to history
+      if (Object.keys(runResults).length > 0) {
+        saveToHistory(requirement, currentRequirement || 'generated-project', runResults, pipelineComplete);
+      }
     }
-  }, [resetPipeline]);
+  }, [resetPipeline, currentRequirement, pipelineComplete]);
 
   // Parse generated files from developer output
   const parsedFiles: ParsedFile[] = useMemo(() => {
@@ -206,7 +261,14 @@ export default function Home() {
     return parseGeneratedFiles(devResult.output);
   }, [agentResults]);
 
-  // Also parse deployment files
+  // Parse test files from testing agent output
+  const testFiles: ParsedFile[] = useMemo(() => {
+    const testResult = agentResults['testing-agent'];
+    if (!testResult?.output) return [];
+    return parseGeneratedFiles(testResult.output);
+  }, [agentResults]);
+
+  // Parse deployment files
   const deploymentFiles: ParsedFile[] = useMemo(() => {
     const deployResult = agentResults['deployment-agent'];
     if (!deployResult?.output) return [];
@@ -214,8 +276,8 @@ export default function Home() {
   }, [agentResults]);
 
   const allGeneratedFiles = useMemo(() => {
-    return [...parsedFiles, ...deploymentFiles];
-  }, [parsedFiles, deploymentFiles]);
+    return [...parsedFiles, ...testFiles, ...deploymentFiles];
+  }, [parsedFiles, testFiles, deploymentFiles]);
 
   // Extract project name from requirements
   const projectName = useMemo(() => {
@@ -259,6 +321,7 @@ export default function Home() {
   }, [allGeneratedFiles, projectName]);
 
   const completedCount = Object.values(agentStatuses).filter(s => s === 'complete').length;
+  const totalAgents = 6;
 
   return (
     <div className="app-container">
@@ -273,15 +336,37 @@ export default function Home() {
           <div className="logo-section">
             <div className="logo-icon">🤖</div>
             <span className="logo-text">Multi-Agent Orchestrator</span>
-            <span className="logo-badge">AI Pipeline</span>
+            <span className="logo-badge">6 Agents</span>
           </div>
 
-          <div className="header-status">
-            <div className="status-dot" />
-            <span>Groq API Connected</span>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+            <HistoryPanel onRestore={handleRestoreHistory} />
+
+            <div className="header-status">
+              <div className="status-dot" />
+              <span>Groq API Connected</span>
+            </div>
           </div>
         </div>
       </header>
+
+      {/* Retry notification banner */}
+      {retryInfo && (
+        <div style={{
+          padding: '8px 32px',
+          background: 'rgba(245,158,11,0.08)',
+          borderBottom: '1px solid rgba(245,158,11,0.2)',
+          fontSize: '12px',
+          color: 'var(--accent-amber)',
+          fontFamily: 'var(--font-mono)',
+          display: 'flex',
+          alignItems: 'center',
+          gap: '8px',
+        }}>
+          <span>⚠️</span>
+          {retryInfo}
+        </div>
+      )}
 
       {/* Main Content */}
       <main className="main-content">
@@ -290,6 +375,7 @@ export default function Home() {
           onSubmit={handleSubmit}
           isRunning={isRunning}
           onStop={handleStop}
+          initialValue={currentRequirement}
         />
 
         {/* Stats Bar (shown when pipeline is running or complete) */}
@@ -299,7 +385,7 @@ export default function Home() {
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                 <path d="M22 12h-4l-3 9L9 3l-3 9H2" />
               </svg>
-              Progress: <span className="stat-value">{completedCount}/5</span>
+              Progress: <span className="stat-value">{completedCount}/{totalAgents}</span>
             </div>
             <div className="stat-item">
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -326,7 +412,30 @@ export default function Home() {
                 Tokens Used: <span className="stat-value">{totalTokens.toLocaleString()}</span>
               </div>
             )}
+            {pipelineComplete && (
+              <button
+                onClick={() => setShowAnalytics(prev => !prev)}
+                style={{
+                  marginLeft: 'auto',
+                  padding: '3px 10px',
+                  background: showAnalytics ? 'rgba(99,102,241,0.15)' : 'var(--bg-glass)',
+                  border: `1px solid ${showAnalytics ? 'rgba(99,102,241,0.3)' : 'var(--border-primary)'}`,
+                  borderRadius: '6px',
+                  fontSize: '12px',
+                  color: showAnalytics ? 'var(--accent-indigo)' : 'var(--text-muted)',
+                  cursor: 'pointer',
+                  fontFamily: 'var(--font-sans)',
+                }}
+              >
+                📊 {showAnalytics ? 'Hide' : 'Show'} Analytics
+              </button>
+            )}
           </div>
+        )}
+
+        {/* Analytics Panel */}
+        {showAnalytics && pipelineComplete && (
+          <AnalyticsPanel agentResults={agentResults} />
         )}
 
         {/* Two-column layout for pipeline + output */}
@@ -363,6 +472,19 @@ export default function Home() {
           <>
             <div className="section-divider">
               Generated Project Files
+              {testFiles.length > 0 && (
+                <span style={{
+                  marginLeft: '12px',
+                  fontSize: '12px',
+                  padding: '2px 8px',
+                  background: 'rgba(236,72,153,0.12)',
+                  color: '#ec4899',
+                  borderRadius: '20px',
+                  border: '1px solid rgba(236,72,153,0.2)',
+                }}>
+                  🧪 {testFiles.length} test file{testFiles.length !== 1 ? 's' : ''} included
+                </span>
+              )}
             </div>
             <WorkspaceViewer
               files={allGeneratedFiles}
@@ -384,7 +506,7 @@ export default function Home() {
         color: 'var(--text-muted)',
         background: 'rgba(10, 10, 15, 0.5)',
       }}>
-        Built with Next.js · Vercel AI SDK · Groq API — Zero Cost AI Pipeline
+        Built with Next.js · Vercel AI SDK · Groq API — 6-Agent AI Pipeline · Zero Cost
       </footer>
     </div>
   );

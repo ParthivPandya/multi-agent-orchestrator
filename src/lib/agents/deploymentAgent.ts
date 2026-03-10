@@ -16,6 +16,7 @@ export async function runDeploymentAgent(
     requirements: string,
     context: AgentContext
 ): Promise<AgentResult> {
+    const startTime = Date.now();
     try {
         const groq = createGroq({ apiKey: process.env.GROQ_API_KEY! });
 
@@ -34,6 +35,7 @@ export async function runDeploymentAgent(
             timestamp: new Date().toISOString(),
             model: config.model,
             tokensUsed: usage?.totalTokens,
+            latencyMs: Date.now() - startTime,
         };
 
         context.add(result);
@@ -45,6 +47,7 @@ export async function runDeploymentAgent(
             output: '',
             timestamp: new Date().toISOString(),
             model: config.model,
+            latencyMs: Date.now() - startTime,
             error: error instanceof Error ? error.message : 'Unknown error occurred',
         };
 

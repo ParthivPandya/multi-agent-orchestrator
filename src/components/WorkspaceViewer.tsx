@@ -22,6 +22,8 @@ export default function WorkspaceViewer({
         files.length > 0 ? files[0] : null
     );
     const [copiedFile, setCopiedFile] = useState<string | null>(null);
+    const [isDownloading, setIsDownloading] = useState(false);
+    const [downloadDone, setDownloadDone] = useState(false);
 
     const handleCopyFile = useCallback((file: ParsedFile) => {
         navigator.clipboard.writeText(file.content);
@@ -35,6 +37,64 @@ export default function WorkspaceViewer({
             .join('\n\n');
         navigator.clipboard.writeText(allContent);
     }, [files]);
+
+    /**
+     * ZIP Export — bundles all files client-side using a simple approach
+     * without external libraries (uses the File System API / data URLs).
+     * Creates a zip-like tar using a simple concatenation approach,
+     * or creates individual text files if only browser download is needed.
+     * For full ZIP support the jszip package can be installed separately.
+     */
+    const handleDownloadZip = useCallback(async () => {
+        if (files.length === 0) return;
+        setIsDownloading(true);
+
+        try {
+            // Dynamically import jszip if available, otherwise download as combined txt
+            let zip: {
+                file: (path: string, content: string) => void;
+                generateAsync: (opts: Record<string, string>) => Promise<Blob>;
+            } | null = null;
+
+            try {
+                // @ts-expect-error optional peer dep
+                const JSZip = (await import('jszip')).default;
+                zip = new JSZip();
+            } catch {
+                zip = null;
+            }
+
+            if (zip) {
+                files.forEach(f => zip!.file(f.path, f.content));
+                const blob = await zip.generateAsync({ type: 'blob' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `${projectName}.zip`;
+                a.click();
+                URL.revokeObjectURL(url);
+            } else {
+                // Fallback: download all files concatenated
+                const content = files
+                    .map(f => `${'='.repeat(60)}\n// File: ${f.path}\n${'='.repeat(60)}\n${f.content}`)
+                    .join('\n\n');
+                const blob = new Blob([content], { type: 'text/plain' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `${projectName}-files.txt`;
+                a.click();
+                URL.revokeObjectURL(url);
+            }
+
+            setDownloadDone(true);
+            setTimeout(() => setDownloadDone(false), 3000);
+        } catch (err) {
+            console.error('Download failed:', err);
+        } finally {
+            setIsDownloading(false);
+        }
+    }, [files, projectName]);
 
     if (files.length === 0) {
         return (
@@ -108,6 +168,7 @@ export default function WorkspaceViewer({
                 </div>
 
                 <div style={{ display: 'flex', gap: '8px' }}>
+                    {/* Copy All */}
                     <button className="btn-secondary" onClick={handleCopyAll} style={{ padding: '6px 14px', fontSize: '12px' }}>
                         <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                             <rect x="9" y="9" width="13" height="13" rx="2" ry="2" />
@@ -116,6 +177,35 @@ export default function WorkspaceViewer({
                         Copy All
                     </button>
 
+                    {/* Download ZIP */}
+                    <button
+                        className="btn-secondary"
+                        onClick={handleDownloadZip}
+                        disabled={isDownloading}
+                        style={{
+                            padding: '6px 14px',
+                            fontSize: '12px',
+                            color: downloadDone ? 'var(--accent-emerald)' : undefined,
+                        }}
+                        title="Download all files as ZIP"
+                    >
+                        {isDownloading ? (
+                            <div className="spinner" style={{ width: '12px', height: '12px' }} />
+                        ) : downloadDone ? (
+                            <>✓ Downloaded</>
+                        ) : (
+                            <>
+                                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                                    <polyline points="7 10 12 15 17 10" />
+                                    <line x1="12" y1="15" x2="12" y2="3" />
+                                </svg>
+                                Download ZIP
+                            </>
+                        )}
+                    </button>
+
+                    {/* Save to Workspace */}
                     <button
                         className="btn-primary"
                         onClick={onSaveToWorkspace}
@@ -137,9 +227,9 @@ export default function WorkspaceViewer({
                         ) : (
                             <>
                                 <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
-                                    <polyline points="7 10 12 15 17 10" />
-                                    <line x1="12" y1="15" x2="12" y2="3" />
+                                    <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z" />
+                                    <polyline points="17 21 17 13 7 13 7 21" />
+                                    <polyline points="7 3 7 8 15 8" />
                                 </svg>
                                 Save to Workspace
                             </>
@@ -338,6 +428,10 @@ function getFileIcon(fileName: string): string {
         go: '🔵',
         rs: '🦀',
         java: '☕',
+        test: '🧪',
+        spec: '🧪',
     };
+    // Also check for test files by name pattern
+    if (fileName.includes('.test.') || fileName.includes('.spec.')) return '🧪';
     return iconMap[ext] || '📄';
 }

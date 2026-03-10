@@ -18,6 +18,7 @@ const PIPELINE_ORDER: AgentName[] = [
     'task-planner',
     'developer',
     'code-reviewer',
+    'testing-agent',
     'deployment-agent',
 ];
 
@@ -41,11 +42,12 @@ export default function PipelineView({
         return '';
     };
 
+    // Loop is between Developer (index 2) and Code Reviewer (index 3)
     const isInLoop = (
         agentStatuses['developer'] === 'running' ||
         agentStatuses['code-reviewer'] === 'running' ||
         (agentStatuses['developer'] === 'complete' && agentStatuses['code-reviewer'] === 'complete' &&
-            agentStatuses['deployment-agent'] === 'idle' && currentIteration > 1)
+            agentStatuses['testing-agent'] === 'idle' && currentIteration > 1)
     );
 
     return (

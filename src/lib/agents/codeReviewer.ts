@@ -16,6 +16,7 @@ export async function runCodeReviewer(
     requirements: string,
     context: AgentContext
 ): Promise<AgentResult> {
+    const startTime = Date.now();
     try {
         const groq = createGroq({ apiKey: process.env.GROQ_API_KEY! });
         const iteration = context.getIterationCount('code-reviewer') + 1;
@@ -36,6 +37,7 @@ export async function runCodeReviewer(
             model: config.model,
             tokensUsed: usage?.totalTokens,
             iterationNumber: iteration,
+            latencyMs: Date.now() - startTime,
         };
 
         context.add(result);
@@ -47,6 +49,7 @@ export async function runCodeReviewer(
             output: '',
             timestamp: new Date().toISOString(),
             model: config.model,
+            latencyMs: Date.now() - startTime,
             error: error instanceof Error ? error.message : 'Unknown error occurred',
         };
 
