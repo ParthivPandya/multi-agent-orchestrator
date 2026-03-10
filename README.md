@@ -32,9 +32,11 @@ Features
 
 ---
 
-<img src="docs/screenshots/landing-page.png" alt="Multi-Agent Orchestrator Landing Page" width="900" />
-<img src="docs/screenshots/pipeline-running.png" alt="Multi-Agent Orchestrator Landing Page" width="900" />
-<img src="docs/screenshots/pipeline-complete.png" alt="Multi-Agent Orchestrator Landing Page" width="900" />
+<div style="display:flex; flex-direction:column; gap:20px; align-items:center;">
+    <img src="docs/screenshots/landing-page.png" alt="Landing Page" style="max-width: 100%; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.15);" />
+    <img src="docs/screenshots/pipeline-running.png" alt="Pipeline Running" style="max-width: 100%; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.15);" />
+    <img src="docs/screenshots/pipeline-complete.png" alt="Pipeline Complete" style="max-width: 100%; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.15);" />
+</div>
 </div>
 
 ---
