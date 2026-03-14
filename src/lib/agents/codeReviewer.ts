@@ -14,7 +14,9 @@ const config = AGENT_CONFIGS['code-reviewer'];
 export async function runCodeReviewer(
     code: string,
     requirements: string,
-    context: AgentContext
+    context: AgentContext,
+    ragContext?: string,
+    lintContext?: string
 ): Promise<AgentResult> {
     const startTime = Date.now();
     try {
@@ -24,7 +26,7 @@ export async function runCodeReviewer(
         const { text, usage } = await generateText({
             model: groq(config.model),
             system: REVIEWER_SYSTEM_PROMPT,
-            prompt: getReviewerPrompt(code, requirements),
+            prompt: getReviewerPrompt(code, requirements, ragContext, lintContext),
             maxOutputTokens: config.maxTokens,
             temperature: 0.2, // Low temperature for consistent evaluation
         });

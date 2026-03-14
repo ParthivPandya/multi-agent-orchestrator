@@ -64,9 +64,21 @@ Brief overview of the code quality
 
 export const getReviewerPrompt = (
     code: string,
-    requirements: string
+    requirements: string,
+    ragContext?: string,
+    lintContext?: string
 ): string => {
-    return `Review the following code against the requirements specification:
+    let prompt = '';
+
+    if (ragContext && ragContext.trim()) {
+        prompt += ragContext + '\n\n';
+    }
+
+    if (lintContext && lintContext.trim()) {
+        prompt += `🔍 STATIC LINT ANALYSIS (pre-computed — use this as input to your review):\n${lintContext}\n\n`;
+    }
+
+    prompt += `Review the following code against the requirements specification:
 
 ---
 REQUIREMENTS SPECIFICATION:
@@ -78,4 +90,6 @@ ${code}
 ---
 
 Provide your thorough review now. Remember to start with APPROVED or CHANGES_REQUESTED.`;
+
+    return prompt;
 };

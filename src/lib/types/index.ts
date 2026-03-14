@@ -2,7 +2,7 @@
 // Multi-Agent Orchestration System — Shared Type Definitions
 // ============================================================
 
-export type AgentStatus = 'idle' | 'running' | 'complete' | 'error';
+export type AgentStatus = 'idle' | 'running' | 'complete' | 'error' | 'skipped';
 
 export type AgentName =
   | 'requirements-analyst'
@@ -10,7 +10,8 @@ export type AgentName =
   | 'developer'
   | 'code-reviewer'
   | 'testing-agent'
-  | 'deployment-agent';
+  | 'deployment-agent'
+  | 'router-agent';
 
 export interface AgentResult {
   agentName: AgentName;
@@ -76,6 +77,81 @@ export interface ReviewOutput {
   score: number;
 }
 
+// ─── Enhancement 1: Intelligent Routing ────────────────────────────────────────
+
+export type PipelineMode =
+  | 'FULL_PIPELINE'   // All 6 agents — complex feature build
+  | 'QUICK_FIX'       // Developer + Reviewer only — small bug fix / tweak
+  | 'PLAN_ONLY'       // Analyst + Planner only — architecture / planning question
+  | 'CODE_REVIEW_ONLY'; // Reviewer only — user pastes code for review
+
+export interface RouteDecision {
+  mode: PipelineMode;
+  reasoning: string;
+  skippedAgents: AgentName[];
+  confidence: number; // 0-1
+}
+
+// ─── Enhancement 2: Agentic Tools ──────────────────────────────────────────────
+
+export interface ToolCall {
+  toolName: string;
+  input: Record<string, unknown>;
+  timestamp: string;
+}
+
+export interface ToolResult {
+  toolName: string;
+  output: string;
+  success: boolean;
+  durationMs: number;
+}
+
+// ─── Enhancement 3: RAG / Knowledge ────────────────────────────────────────────
+
+export interface RAGChunk {
+  id: string;
+  source: string;       // e.g. "Next.js 14 App Router Docs"
+  content: string;
+  keywords: string[];
+  score?: number;       // populated after retrieval
+}
+
+// ─── Enhancement 4: Flows DSL ──────────────────────────────────────────────────
+
+export interface AgentNode {
+  id: string;
+  agentName: AgentName;
+  description?: string;
+}
+
+export interface FlowEdge {
+  from: string;  // AgentNode id
+  to: string;    // AgentNode id
+}
+
+export interface FlowGraph {
+  name: string;
+  description: string;
+  version: string;
+  nodes: AgentNode[];
+  edges: FlowEdge[];
+  parallelGroups?: string[][]; // groups of node IDs that run in parallel
+}
+
+// ─── Enhancement 5: Checkpoint / Stateful Orchestration ───────────────────────
+
+export interface PipelineCheckpoint {
+  id: string;
+  requirement: string;
+  createdAt: string;
+  lastUpdatedAt: string;
+  completedStages: string[];
+  results: Record<string, AgentResult>;
+  isComplete: boolean;
+  workspacePath?: string;
+}
+
 // Pipeline event for streaming updates to the frontend
 export interface PipelineEvent {
   type:
@@ -86,7 +162,12 @@ export interface PipelineEvent {
   | 'iteration_info'
   | 'final_result'
   | 'retry_attempt'
-  | 'pipeline_paused';
+  | 'pipeline_paused'
+  | 'route_decision'    // NEW: router classified the intent
+  | 'tool_call'         // NEW: an agent is calling a tool
+  | 'tool_result'       // NEW: tool returned a result
+  | 'rag_retrieval'     // NEW: RAG retrieved relevant docs
+  | 'checkpoint_saved'; // NEW: pipeline state saved to disk
   stage?: string;
   agentName?: AgentName;
   status?: AgentStatus;
@@ -101,11 +182,22 @@ export interface PipelineEvent {
   retryAttempt?: number;
   maxRetries?: number;
   latencyMs?: number;
+  // Routing-specific
+  routeDecision?: RouteDecision;
+  // Tool-specific
+  toolCall?: ToolCall;
+  toolResult?: ToolResult;
+  // RAG-specific
+  ragChunks?: RAGChunk[];
+  // Checkpoint-specific
+  checkpointId?: string;
 }
 
 // API Request/Response types
 export interface OrchestrateRequest {
   requirement: string;
+  resumeCheckpointId?: string; // Enhancement 5: resume from saved checkpoint
+  flowName?: string;           // Enhancement 4: run a named custom flow
 }
 
 export interface AgentTestRequest {
@@ -135,6 +227,8 @@ export interface PipelineHistoryEntry {
   totalLatencyMs: number;
   agentResults: Record<string, AgentResult>;
   projectName: string;
+  checkpointId?: string; // Enhancement 5: link to resumable checkpoint
+  pipelineMode?: PipelineMode; // Enhancement 1: which mode was used
 }
 
 // Analytics per pipeline run
@@ -151,6 +245,15 @@ export interface PipelineAnalytics {
 }
 
 export const AGENT_CONFIGS: Record<AgentName, AgentConfig> = {
+  'router-agent': {
+    name: 'router-agent',
+    displayName: 'Router / Classifier',
+    description: 'Classifies user intent and routes to the optimal pipeline subset',
+    model: 'llama-3.1-8b-instant',
+    icon: '🧭',
+    color: '#f43f5e',
+    maxTokens: 512,
+  },
   'requirements-analyst': {
     name: 'requirements-analyst',
     displayName: 'Requirements Analyst',

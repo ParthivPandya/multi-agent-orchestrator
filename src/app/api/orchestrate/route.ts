@@ -1,5 +1,5 @@
 // ============================================================
-// POST /api/orchestrate — Runs the full multi-agent pipeline
+// POST /api/orchestrate — enhanced with routing + checkpointing
 // Returns a Server-Sent Events (SSE) stream for real-time updates
 // ============================================================
 
@@ -12,7 +12,7 @@ export const maxDuration = 300; // 5 minutes for full pipeline
 export async function POST(request: NextRequest) {
     try {
         const body = await request.json();
-        const { requirement } = body;
+        const { requirement, resumeCheckpointId } = body;
 
         if (!requirement || typeof requirement !== 'string' || requirement.trim().length === 0) {
             return new Response(
@@ -38,13 +38,19 @@ export async function POST(request: NextRequest) {
                 };
 
                 try {
-                    const result = await runPipeline(requirement, onEvent);
+                    const result = await runPipeline(
+                        requirement,
+                        onEvent,
+                        resumeCheckpointId
+                    );
 
-                    // Send final result
+                    // Send final result with checkpointId and routeDecision
                     const finalEvent = `data: ${JSON.stringify({
                         type: 'final_result',
                         success: result.success,
                         results: result.results,
+                        checkpointId: result.checkpointId,
+                        routeDecision: result.routeDecision,
                         timestamp: new Date().toISOString(),
                     })}\n\n`;
                     controller.enqueue(encoder.encode(finalEvent));

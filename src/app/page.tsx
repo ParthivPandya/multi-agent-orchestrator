@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useRef, useCallback, useMemo, useEffect } from 'react';
-import { AgentName, AgentStatus, AgentResult, PipelineEvent, PipelineHistoryEntry } from '@/lib/types';
+import { AgentName, AgentStatus, AgentResult, PipelineEvent, PipelineHistoryEntry, RouteDecision } from '@/lib/types';
 import { parseGeneratedFiles, ParsedFile } from '@/lib/fileParser';
 import { saveToHistory } from '@/lib/history';
 import RequirementInput from '@/components/RequirementInput';
@@ -12,6 +12,7 @@ import AnalyticsPanel from '@/components/AnalyticsPanel';
 import HistoryPanel from '@/components/HistoryPanel';
 
 const INITIAL_STATUSES: Record<AgentName, AgentStatus> = {
+  'router-agent': 'idle',
   'requirements-analyst': 'idle',
   'task-planner': 'idle',
   'developer': 'idle',
@@ -22,12 +23,22 @@ const INITIAL_STATUSES: Record<AgentName, AgentStatus> = {
 
 // Map stage names to agent names
 const STAGE_TO_AGENT: Record<string, AgentName> = {
+  routing: 'router-agent',
   requirements: 'requirements-analyst',
   tasks: 'task-planner',
   development: 'developer',
+  code: 'developer',
   review: 'code-reviewer',
   testing: 'testing-agent',
+  tests: 'testing-agent',
   deployment: 'deployment-agent',
+};
+
+const PIPELINE_MODE_LABELS: Record<string, { label: string; color: string; icon: string }> = {
+  FULL_PIPELINE:    { label: 'Full Pipeline',     color: '#6366f1', icon: '⚡' },
+  QUICK_FIX:        { label: 'Quick Fix',          color: '#10b981', icon: '🔧' },
+  PLAN_ONLY:        { label: 'Plan Only',           color: '#f59e0b', icon: '📋' },
+  CODE_REVIEW_ONLY: { label: 'Code Review Only',   color: '#ec4899', icon: '🔎' },
 };
 
 export default function Home() {
@@ -44,6 +55,9 @@ export default function Home() {
   const [showAnalytics, setShowAnalytics] = useState(false);
   const [retryInfo, setRetryInfo] = useState<string | null>(null);
   const [currentRequirement, setCurrentRequirement] = useState('');
+  const [routeDecision, setRouteDecision] = useState<RouteDecision | null>(null);
+  const [activityFeed, setActivityFeed] = useState<string[]>([]);
+  const [checkpointId, setCheckpointId] = useState<string | null>(null);
   const abortControllerRef = useRef<AbortController | null>(null);
 
   // Clear retry info after a delay
@@ -64,6 +78,8 @@ export default function Home() {
     setSavedWorkspacePath(null);
     setShowAnalytics(false);
     setRetryInfo(null);
+    setRouteDecision(null);
+    setActivityFeed([]);
   }, []);
 
   const handleStop = useCallback(() => {
@@ -93,8 +109,8 @@ export default function Home() {
     if (entry.success) setShowAnalytics(true);
   }, [resetPipeline]);
 
-  const handleSubmit = useCallback(async (requirement: string) => {
-    resetPipeline();
+  const handleSubmit = useCallback(async (requirement: string, resumeFromCheckpointId?: string) => {
+    if (!resumeFromCheckpointId) resetPipeline();
     setIsRunning(true);
     setCurrentRequirement(requirement);
 
@@ -106,7 +122,7 @@ export default function Home() {
       const response = await fetch('/api/orchestrate', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ requirement }),
+        body: JSON.stringify({ requirement, resumeCheckpointId: resumeFromCheckpointId }),
         signal: controller.signal,
       });
 
@@ -199,6 +215,37 @@ export default function Home() {
                 break;
               }
 
+              case 'route_decision': {
+                if (event.routeDecision) {
+                  setRouteDecision(event.routeDecision);
+                  setAgentStatuses(prev => ({ ...prev, 'router-agent': 'complete' }));
+                  // Mark skipped agents
+                  const skipped = event.routeDecision.skippedAgents;
+                  if (skipped.length > 0) {
+                    setAgentStatuses(prev => {
+                      const next = { ...prev };
+                      skipped.forEach(a => { next[a] = 'skipped'; });
+                      return next;
+                    });
+                  }
+                }
+                break;
+              }
+
+              case 'tool_call':
+              case 'tool_result':
+              case 'rag_retrieval': {
+                if (event.output) {
+                  setActivityFeed(prev => [event.output!, ...prev].slice(0, 20));
+                }
+                break;
+              }
+
+              case 'checkpoint_saved': {
+                if (event.checkpointId) setCheckpointId(event.checkpointId);
+                break;
+              }
+
               case 'pipeline_complete': {
                 setPipelineComplete(true);
                 setShowAnalytics(true);
@@ -228,6 +275,12 @@ export default function Home() {
                       }
                     }
                   });
+                }
+                if ((event as PipelineEvent & { checkpointId?: string }).checkpointId) {
+                  setCheckpointId((event as PipelineEvent & { checkpointId?: string }).checkpointId!);
+                }
+                if ((event as PipelineEvent & { routeDecision?: RouteDecision }).routeDecision) {
+                  setRouteDecision((event as PipelineEvent & { routeDecision?: RouteDecision }).routeDecision!);
                 }
                 setPipelineComplete(true);
                 setShowAnalytics(true);
@@ -321,7 +374,7 @@ export default function Home() {
   }, [allGeneratedFiles, projectName]);
 
   const completedCount = Object.values(agentStatuses).filter(s => s === 'complete').length;
-  const totalAgents = 6;
+  const totalAgents = 7; // Router + 6 pipeline agents
 
   return (
     <div className="app-container">
@@ -336,7 +389,7 @@ export default function Home() {
           <div className="logo-section">
             <div className="logo-icon">🤖</div>
             <span className="logo-text">Multi-Agent Orchestrator</span>
-            <span className="logo-badge">6 Agents</span>
+            <span className="logo-badge">v2 · 7 Agents</span>
           </div>
 
           <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
@@ -365,6 +418,42 @@ export default function Home() {
         }}>
           <span>⚠️</span>
           {retryInfo}
+        </div>
+      )}
+
+      {/* Route Decision Banner (Enhancement 1) */}
+      {routeDecision && (
+        <div style={{
+          padding: '8px 32px',
+          background: 'rgba(0,0,0,0.2)',
+          borderBottom: '1px solid rgba(255,255,255,0.07)',
+          fontSize: '12px',
+          display: 'flex',
+          alignItems: 'center',
+          gap: '12px',
+          flexWrap: 'wrap',
+        }}>
+          <span style={{ color: 'var(--text-muted)' }}>🧭 Router classified:</span>
+          <span style={{
+            padding: '2px 10px',
+            borderRadius: '20px',
+            fontWeight: 600,
+            fontSize: '11px',
+            background: `${PIPELINE_MODE_LABELS[routeDecision.mode]?.color}22`,
+            color: PIPELINE_MODE_LABELS[routeDecision.mode]?.color ?? '#fff',
+            border: `1px solid ${PIPELINE_MODE_LABELS[routeDecision.mode]?.color}44`,
+          }}>
+            {PIPELINE_MODE_LABELS[routeDecision.mode]?.icon} {PIPELINE_MODE_LABELS[routeDecision.mode]?.label ?? routeDecision.mode}
+          </span>
+          <span style={{ color: 'var(--text-muted)', fontStyle: 'italic' }}>{routeDecision.reasoning}</span>
+          {routeDecision.skippedAgents.length > 0 && (
+            <span style={{ color: 'var(--text-muted)', marginLeft: 'auto' }}>
+              Skipping: {routeDecision.skippedAgents.join(', ')}
+            </span>
+          )}
+          <span style={{ color: 'var(--text-muted)' }}>
+            {Math.round(routeDecision.confidence * 100)}% confidence
+          </span>
         </div>
       )}
 
@@ -438,6 +527,28 @@ export default function Home() {
           <AnalyticsPanel agentResults={agentResults} />
         )}
 
+        {/* Activity Feed — tool calls, RAG, checkpoints (Enhancement 2,3,5) */}
+        {activityFeed.length > 0 && (
+          <div style={{
+            background: 'rgba(0,0,0,0.25)',
+            border: '1px solid rgba(255,255,255,0.07)',
+            borderRadius: '10px',
+            padding: '12px 16px',
+            marginBottom: '8px',
+          }}>
+            <div style={{ fontSize: '11px', fontWeight: 600, color: 'var(--text-muted)', marginBottom: '8px', letterSpacing: '0.06em', textTransform: 'uppercase' }}>
+              ⚡ Agent Activity
+            </div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+              {activityFeed.map((item, i) => (
+                <div key={i} style={{ fontSize: '11px', color: 'var(--text-muted)', fontFamily: 'var(--font-mono)', opacity: 1 - i * 0.04 }}>
+                  {item}
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
         {/* Two-column layout for pipeline + output */}
         <div style={{
           display: 'grid',
@@ -506,7 +617,7 @@ export default function Home() {
         color: 'var(--text-muted)',
         background: 'rgba(10, 10, 15, 0.5)',
       }}>
-        Built with Next.js · Vercel AI SDK · Groq API — 6-Agent AI Pipeline · Zero Cost
+        Built with Next.js · Vercel AI SDK · Groq API — Router + 6-Agent Pipeline · Intelligent Routing · RAG · Agentic Tools · Checkpoints
       </footer>
     </div>
   );

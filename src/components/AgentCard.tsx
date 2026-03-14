@@ -17,6 +17,7 @@ const STATUS_LABELS: Record<AgentStatus, string> = {
     running: 'Running...',
     complete: 'Complete',
     error: 'Failed',
+    skipped: 'Skipped',
 };
 
 const STATUS_ICONS: Record<AgentStatus, string> = {
@@ -24,6 +25,7 @@ const STATUS_ICONS: Record<AgentStatus, string> = {
     running: '🔄',
     complete: '✅',
     error: '❌',
+    skipped: '⏭',
 };
 
 export default function AgentCard({

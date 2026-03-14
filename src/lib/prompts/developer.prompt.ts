@@ -45,9 +45,17 @@ Structure your response as follows:
 export const getDeveloperPrompt = (
     tasks: string,
     requirements: string,
-    reviewerFeedback?: string
+    reviewerFeedback?: string,
+    ragAndSearchContext?: string
 ): string => {
-    let prompt = `Write production-ready code based on the following task plan and requirements:
+    let prompt = '';
+
+    // Prepend RAG/search context first so the LLM prioritises it
+    if (ragAndSearchContext && ragAndSearchContext.trim()) {
+        prompt += ragAndSearchContext + '\n\n';
+    }
+
+    prompt += `Write production-ready code based on the following task plan and requirements:
 
 ---
 REQUIREMENTS SPECIFICATION:

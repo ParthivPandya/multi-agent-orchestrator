@@ -15,7 +15,8 @@ export async function runDeveloper(
     tasks: string,
     requirements: string,
     context: AgentContext,
-    reviewerFeedback?: string
+    reviewerFeedback?: string,
+    ragAndSearchContext?: string
 ): Promise<AgentResult> {
     const startTime = Date.now();
     try {
@@ -25,7 +26,7 @@ export async function runDeveloper(
         const { text, usage } = await generateText({
             model: groq(config.model),
             system: DEVELOPER_SYSTEM_PROMPT,
-            prompt: getDeveloperPrompt(tasks, requirements, reviewerFeedback),
+            prompt: getDeveloperPrompt(tasks, requirements, reviewerFeedback, ragAndSearchContext),
             maxOutputTokens: config.maxTokens,
             temperature: 0.5, // Slightly higher for creative code generation
         });
