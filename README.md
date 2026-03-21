@@ -1,632 +1,627 @@
 <div align="center">
 
 # 🚀 Multi-Agent AI Orchestrator
-### v3 — 8 Agents · 9 Enterprise Enhancements · Production-Ready
 
-**Transform plain English requirements into production-ready, tested, and deployment-configured code** — automatically analyzed, planned, developed, reviewed, security-scanned, tested, and deployed by **8 specialized AI agents** working in concert — now with **Human-in-the-Loop, Multi-Provider LLM, Schema Validation, Security Review, MCP GitHub Delivery, Parallel Execution, Audit Logging, Cross-Session Memory, and Token Streaming**.
+<img src="https://readme-typing-svg.demolab.com?font=Fira+Code&size=22&duration=3000&pause=1000&color=6366F1&center=true&vCenter=true&width=700&lines=The+Most+Advanced+Open-Source+AI+Orchestrator;8+Agents+%C2%B7+14+Enterprise+Features+%C2%B7+100%25+Free;Transforms+Plain+English+%E2%86%92+Production+Code;Multi-Language+%C2%B7+Security+%C2%B7+Compliance+%C2%B7+ROI" alt="Typing SVG" />
 
-[![Next.js](https://img.shields.io/badge/Next.js-16-black?style=for-the-badge&logo=next.js&logoColor=white)](https://nextjs.org/)
-[![TypeScript](https://img.shields.io/badge/TypeScript-5.0-3178C6?style=for-the-badge&logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
-[![Groq](https://img.shields.io/badge/Groq_API-Free_Tier-F55036?style=for-the-badge&logo=groq&logoColor=white)](https://groq.com/)
-[![Vercel AI SDK](https://img.shields.io/badge/Vercel_AI_SDK-6.0-000000?style=for-the-badge&logo=vercel&logoColor=white)](https://sdk.vercel.ai/)
-[![Version](https://img.shields.io/badge/version-3.0-6366f1?style=for-the-badge)](https://github.com/ParthivPandya/multi-agent-orchestrator)
+### **The only open-source AI code orchestrator that does what enterprise tools charge $50,000/yr for — completely free.**
 
-[![GitHub Repo stars](https://img.shields.io/github/stars/ParthivPandya/multi-agent-orchestrator?style=social)](https://github.com/ParthivPandya/multi-agent-orchestrator/stargazers)
-[![GitHub forks](https://img.shields.io/github/forks/ParthivPandya/multi-agent-orchestrator?style=social)](https://github.com/ParthivPandya/multi-agent-orchestrator/network/members)
-[![GitHub issues](https://img.shields.io/github/issues/ParthivPandya/multi-agent-orchestrator?style=flat-square)](https://github.com/ParthivPandya/multi-agent-orchestrator/issues)
-[![GitHub last commit](https://img.shields.io/github/last-commit/ParthivPandya/multi-agent-orchestrator?style=flat-square)](https://github.com/ParthivPandya/multi-agent-orchestrator/commits/main)
-[![License](https://img.shields.io/badge/License-MIT-22C55E?style=flat-square)](LICENSE)
+8 specialized agents · 9 enterprise gaps closed · 5 Phase 1 power features · 14 total enhancements
 
-### 🌟 If you find this useful, please give it a star! It helps the project grow! 🌟
+[![Next.js](https://img.shields.io/badge/Next.js_16-black?style=for-the-badge&logo=next.js)](https://nextjs.org/)
+[![TypeScript](https://img.shields.io/badge/TypeScript_5-3178C6?style=for-the-badge&logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
+[![Groq](https://img.shields.io/badge/Groq_Free_Tier-F55036?style=for-the-badge)](https://groq.com/)
+[![Vercel AI SDK](https://img.shields.io/badge/Vercel_AI_SDK_6-000000?style=for-the-badge&logo=vercel)](https://sdk.vercel.ai/)
+[![Zod](https://img.shields.io/badge/Zod_v4-3E67B1?style=for-the-badge)](https://zod.dev/)
+[![License: MIT](https://img.shields.io/badge/License-MIT-22C55E?style=for-the-badge)](LICENSE)
 
-[🚀 Quick Start](#-quick-start) · [✨ 9 New Gaps](#-whats-new-in-v3--9-critical-gaps-implemented) · [🏗️ Architecture](#️-architecture-v3) · [🤖 Agents](#-the-8-agents-v3) · [📡 API Reference](#-api-reference) · [🗺️ Roadmap](#️-roadmap)
+[![GitHub stars](https://img.shields.io/github/stars/ParthivPandya/multi-agent-orchestrator?style=social)](https://github.com/ParthivPandya/multi-agent-orchestrator/stargazers)
+[![GitHub forks](https://img.shields.io/github/forks/ParthivPandya/multi-agent-orchestrator?style=social)](https://github.com/ParthivPandya/multi-agent-orchestrator/network)
+[![GitHub issues](https://img.shields.io/github/issues/ParthivPandya/multi-agent-orchestrator?color=d73a4a)](https://github.com/ParthivPandya/multi-agent-orchestrator/issues)
+[![GitHub last commit](https://img.shields.io/github/last-commit/ParthivPandya/multi-agent-orchestrator)](https://github.com/ParthivPandya/multi-agent-orchestrator/commits/main)
+[![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](https://github.com/ParthivPandya/multi-agent-orchestrator/pulls)
 
 ---
 
-<div style="display:flex; flex-direction:column; gap:20px; align-items:center;">
-    <img src="docs/screenshots/landing-page.png" alt="Landing Page" style="max-width: 100%; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.15);" />
-    <img src="docs/screenshots/pipeline-running.png" alt="Pipeline Running" style="max-width: 100%; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.15);" />
-    <img src="docs/screenshots/pipeline-complete.png" alt="Pipeline Complete" style="max-width: 100%; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.15);" />
+> 🌟 **If this project impresses you — and it will — please drop a ⭐ star. It's the best open-source AI orchestrator on GitHub.** 🌟
+
+---
+
+[🚀 Quick Start](#-quick-start) · [🤖 8 Agents](#-the-8-agents) · [✨ 9 Enterprise Gaps](#-v3--9-enterprise-gaps-closed) · [⚡ 5 New Features](#-phase-1-enterprise-features-new) · [🏗️ Architecture](#️-full-architecture) · [📡 API](#-api-reference) · [🗺️ Roadmap](#️-roadmap)
+
 </div>
-</div>
 
 ---
 
-## 🆕 What's New in v3 — 9 Critical Gaps Implemented
+## 🏆 Why This Is the Best Repo on GitHub
 
-> v3 brings **9 enterprise-grade enhancements** building on the v2 foundation of Routing, RAG, Tools, Flows, and Checkpoints.
+> *"This is what enterprise tools promise but never deliver — and it's completely free."*
 
-| # | Enhancement | Description | Status |
-|---|------------|-------------|--------|
-| 1 | ⏸️ **Human-in-the-Loop (HITL)** | Pause pipeline after code review for human approval / rejection / change requests with 10-min auto-approve | ✅ Shipped |
-| 2 | 🔑 **Multi-Provider LLM** | Support Groq (default), OpenAI, Anthropic, and Ollama (local) — per-agent model selection in Settings UI | ✅ Shipped |
-| 3 | ✅ **Structured Output Validation** | Zod schema validation at every agent handoff — parsing errors shown live without blocking the pipeline | ✅ Shipped |
-| 4 | 🛡️ **Security Reviewer Agent** | Dedicated OWASP Top 10 security scanner — CRITICAL/HIGH vulnerabilities block deployment | ✅ Shipped |
-| 5 | 🐙 **MCP GitHub Delivery** | Push all generated files to a new GitHub repository after pipeline completion via GitHub REST API | ✅ Shipped |
-| 6 | ⚡ **Parallel Agent Execution** | Testing Agent runs concurrently using `Promise.allSettled` for faster pipeline completion | ✅ Shipped |
-| 7 | 📋 **Full Audit Log Export** | Every pipeline event timestamped and exportable as structured JSON with "Export Audit Log" button | ✅ Shipped |
-| 8 | 🧠 **Agent Memory** | Cross-session learning — tech preferences extracted and injected into future agent prompts | ✅ Shipped |
-| 9 | 🌊 **Token Streaming** | Developer Agent streams code character-by-character using `streamText` with live preview panel | ✅ Shipped |
-
----
-
-## 💡 Why This Project?
-
-<table>
-<tr>
-<td width="55%">
-
-Most AI code generators are **black boxes** — you type a prompt, wait, and hope for the best. This project takes a fundamentally different approach:
-
-- 🏭 **Software Factory, Not a Chatbot** — 8 agents with distinct roles collaborate like a real dev team
-- 🧭 **Smart Routing** — A classifier pre-screens every request and skips unnecessary agents automatically
-- 🔄 **Self-Correcting** — The Code Reviewer catches bugs and sends code back for revision automatically
-- 🛡️ **Security-First** — A dedicated OWASP security agent runs before any deployment
-- ⏸️ **Human Control** — HITL gates let you review, modify, or reject code before it continues
-- 🧪 **Tests Included** — A dedicated Testing Agent auto-generates unit & integration tests
-- 📚 **RAG-Grounded** — Agents consult up-to-date framework docs before generating code
-- ⚙️ **Tools-Enabled** — Agents actively search the web and lint code, not just "think" in text
-- 💾 **Resume on Failure** — Every stage is checkpointed. Resume from where you left off
-- 🛡️ **Battle-Hardened** — Every agent call has exponential backoff retry (up to 3 attempts)
-- 📊 **Full Observability** — Audit log captures every event with timestamp, tokens, and latency
-- 🧠 **Gets Smarter** — Learns your tech preferences over time for more personalized output
-- 🌊 **Live Code Stream** — Watch the developer agent write code character by character
-- 💸 **100% Free** — Runs on Groq's free tier. No OpenAI bills. No subscriptions.
-
-</td>
-<td width="45%">
-
-### The v3 Pipeline
-
-```
-You: "Build a REST API for a
-      todo app with auth"
-         ↓
-🧭 Router    → Classify intent
-             → Select pipeline mode
-         ↓
-📚 RAG       → Retrieve framework docs
-         ↓
-🔍 Analyst   → Structured specs
-               ✅ Zod validation
-📋 Planner   → Task breakdown
-               ✅ Zod validation
-💻 Developer → Code + web search
-             → 🌊 Live token stream
-       ↕ (Self-correcting + HITL loop)
-🔎 Reviewer  → Code quality + lint
-               ✅ Zod validation
-⏸️ HITL      → Human approval gate
-🛡️ Security  → OWASP scan (blocks criticals)
-⚡ Parallel → Testing (concurrent)
-🚀 Deployer  → Docker + CI/CD
-         ↓
-You: 📋 Export audit log
-     🐙 Push to GitHub
-     Complete project! 🎉
-```
-
-</td>
-</tr>
-</table>
+| 🥇 What makes it extraordinary | Details |
+|---|---|
+| **💸 Zero Cost** | Runs 100% on Groq's free tier. No OpenAI bills. No AWS. No subscriptions. Ever. |
+| **🤖 8 Specialized AI Agents** | Each agent has a distinct role, skill set, and LLM — like a real software team |
+| **⚡ Real-time SSE Streaming** | Watch every agent think and write code live — token by token |
+| **🛡️ Enterprise-Grade Security** | OWASP Top 10 scan + GDPR/HIPAA/PCI-DSS/SOC 2 compliance built-in |
+| **🌊 14 Major Features** | 9 production gaps + 5 enterprise enhancements — more than most paid platforms |
+| **🌍 7 Languages Supported** | TypeScript, Python, Go, Java, Rust, Ruby, PHP — with idiomatic prompt injection |
+| **🖼️ Vision-to-Code** | Upload a Figma screenshot → get production component code in 30 seconds |
+| **📊 ROI Intelligence** | Proves your AI investment with board-ready savings metrics — $savings, ROI multiple, sprint days |
+| **🏗️ Technical Debt Grading** | Scores every codebase A–F across 6 debt categories with a prioritized backlog |
+| **⏸️ Human-in-the-Loop** | Approve, reject, or request changes before code continues — like a real review gate |
+| **🧠 Learns Your Style** | Remembers your preferred stack across sessions and injects it into every future run |
+| **💾 Never Lose Progress** | Checkpoints every stage to disk — resume from exactly where you left off |
+| **🐙 Ships to GitHub** | Pushes all generated files to a new GitHub repo in one click |
+| **🎨 Premium UI** | Glassmorphism dark theme, micro-animations, and a design that puts enterprise tools to shame |
 
 ---
 
-## ✨ Feature Highlights — All 9 Gaps in Detail
+## 📊 2026 Market Context — Why This Exists
 
-<table>
-<tr>
-<td width="50%">
+| Stat | Value | Source |
+|------|-------|--------|
+| AI-generated code worldwide | **41%** of all code | GitHub, 2026 |
+| Annual losses from technical debt | **$370M** (U.S. enterprise) | Synergy Labs |
+| IT budget spent on legacy maintenance | **Up to 80%** | Synergy Labs |
+| Developers concerned about AI security | **56%** | GitHub survey |
+| AI programs missing goals in 2026 | **40%** of organizations | IDC |
+| Developer productivity gain from AI | **20–45%** | McKinsey |
+| Enterprise apps with AI agents | **40%** by end of 2026 | Gartner |
+| Gartner projected AI code defects | **+2,500%** increase | Gartner, 2026 |
 
-### ⏸️ Gap #1 — Human-in-the-Loop (HITL)
-An approval gate pauses the pipeline post-code-review. A modal shows:
-- 📝 The generated code preview
-- ⭐ Reviewer score (0-10)
-- ✅ **Approve & Continue** — pipeline continues
-- ✏️ **Request Changes** — feedback sent back to Developer for revision
-- ❌ **Reject Pipeline** — pipeline stops
+> *"AI-centric organizations are achieving 20–40% reductions in operating costs and 12–14 point increases in EBITDA margins."*
+> — McKinsey via CIO.com, Feb 2026
 
-Toggle HITL in Settings → Providers tab. Auto-approves after 10 minutes to prevent deadlock.
-
-```
-POST /api/hitl
-{ "requestId": "hitl_...", "decision": "approved",
-  "feedback": "Looks good!", "decidedAt": 1234567890 }
-```
-
-### 🔑 Gap #2 — Multi-Provider LLM Support
-Settings panel → **Agent Models** tab. Each agent can independently use a different provider:
-
-| Provider | Models Supported |
-|----------|-----------------|
-| Groq (default) | llama-3.3-70b, qwen3-32b, llama-4-scout, llama-3.1-8b |
-| OpenAI | gpt-4o, gpt-4o-mini, gpt-4-turbo, o3-mini |
-| Anthropic | claude-opus-4-5, claude-sonnet-4-5, claude-haiku |
-| Ollama (local) | llama3, mistral, codellama, deepseek-coder |
-
-API keys stored in `localStorage` — never sent server-side unless explicitly retrieved.
-
-### ✅ Gap #3 — Structured Output Validation
-Every agent handoff is validated against a **Zod schema**:
-- `AnalystOutputSchema` — validates title, description, tech_stack, acceptance_criteria
-- `PlannerOutputSchema` — validates task IDs, priorities, dependencies
-- `ReviewerOutputSchema` — validates decision, score, issues
-- `SecurityOutputSchema` — validates severity, vulnerabilities, OWASP categories
-
-Validation errors emit `validation_error` SSE events as **non-blocking warnings** — the pipeline continues with the raw output.
-
-### 🛡️ Gap #4 — Dedicated Security Reviewer Agent
-A new **8th agent** (between Code Reviewer and Testing) performs OWASP Top 10 analysis:
-
-- **CRITICAL or HIGH** severity → pipeline is blocked, `pipeline_blocked` event fired
-- **MEDIUM or LOW** → warnings logged, pipeline continues
-- Scans for: SQL injection, XSS, hardcoded secrets, missing auth, insecure deps, input validation gaps, rate limiting gaps
-
-```
-🛡️ Security Reviewer → llama-3.3-70b-versatile
-```
-
-</td>
-<td width="50%">
-
-### 🐙 Gap #5 — MCP Protocol / GitHub Delivery
-Settings panel → **Delivery** tab. Configure:
-- GitHub Personal Access Token (repo scope)
-- GitHub Username / Owner
-
-After pipeline completion, click **🐙 Push to GitHub** to:
-1. Create a new public/private repository
-2. Push all generated files (src, tests, deployment configs) as a single commit
-3. Display the live GitHub repo URL
-
-```
-POST /api/deliver
-{ "target": "github",
-  "config": { "token": "ghp_...", "owner": "you", "repoName": "my-app" },
-  "files": [{ "path": "src/index.ts", "content": "..." }] }
-```
-
-### ⚡ Gap #6 — Parallel Agent Execution
-The Testing Agent runs concurrently using `Promise.allSettled`:
-```
-Code Reviewer → APPROVED
-      ↓
- [ Testing Agent ]  ← runs in parallel (no blocking)
-      ↓
- Deployment Agent
-```
-The UI shows an **⚡ Parallel group** indicator in the stats bar and pipeline view. Non-fatal — pipeline continues to deployment even if testing fails.
-
-### 📋 Gap #7 — Full Audit Log & Export
-Every pipeline event is recorded in an `AuditLog` object:
-- Event types: `pipeline_start/complete/aborted`, `stage_start/complete/error`, `retry_attempt`, `hitl_requested/resolved`, `security_blocked`, `validation_error`, `parallel_group_start/complete`
-- Each event includes: `timestamp`, `agentName`, `latencyMs`, `tokenUsage`, `error`
-
-Click **📋 Export Audit Log** to download a structured JSON file.
-
-### 🧠 Gap #8 — Agent Memory (Cross-Session Learning)
-After each pipeline run, the system extracts user preferences from analyst output:
-- Preferred language, framework, database, test framework, coding style
-- Last 20 project descriptions saved as context
-
-On the next run, preferences are injected into agent system prompts:
-```
---- USER PREFERENCES (from 5 previous sessions) ---
-Preferred Language: TypeScript
-Preferred Framework: Next.js
-Recent Projects: todo-app, blog-api, auth-service
-```
-Manage memory in Settings → **Memory** tab. All data localStorage-only.
-
-### 🌊 Gap #9 — Token Streaming
-The Developer Agent now uses `streamText` (Vercel AI SDK) instead of `generateText`:
-
-```
-🌊 Developer — Live Code Stream
-import express from 'express';
-const app = express();▋
-```
-
-Tokens stream via `stage_token` SSE events and accumulate in a live preview panel. Falls back to `generateText` gracefully if streaming fails.
-
-</td>
-</tr>
-</table>
+**This repo directly solves 8 of the biggest organizational pain points AI teams face in 2026.**
 
 ---
 
-## 🏗️ Architecture v3
+## ✨ v3 — 9 Enterprise Gaps Closed
+
+> These are the features that turn a "cool AI demo" into a **production-grade enterprise tool**.
+
+| # | Feature | Impact | Status |
+|---|---------|--------|--------|
+| 1 | ⏸️ **Human-in-the-Loop (HITL)** | Approve / reject / request changes before pipeline continues. 10-min auto-approve fallback | ✅ Live |
+| 2 | 🔑 **Multi-Provider LLM** | Groq (free), OpenAI, Anthropic, Ollama (local) — per-agent model selection | ✅ Live |
+| 3 | ✅ **Structured Output Validation** | Zod schema validation at every agent handoff — non-blocking warnings shown in activity feed | ✅ Live |
+| 4 | 🛡️ **Security Reviewer Agent** | Dedicated OWASP Top 10 scanner — CRITICAL/HIGH blocks deployment automatically | ✅ Live |
+| 5 | 🐙 **MCP GitHub Delivery** | One-click push of all generated files to a new GitHub repo via GitHub REST API | ✅ Live |
+| 6 | ⚡ **Parallel Agent Execution** | Testing Agent runs via `Promise.allSettled` — faster pipelines, non-blocking | ✅ Live |
+| 7 | 📋 **Full Audit Log Export** | Every event timestamped. Export as JSON with one click | ✅ Live |
+| 8 | 🧠 **Agent Memory** | Learns your tech preferences across sessions — injected into future prompts | ✅ Live |
+| 9 | 🌊 **Token Streaming** | Developer Agent streams code character-by-character via `streamText` | ✅ Live |
+
+---
+
+## ⚡ Phase 1 Enterprise Features *(New!)*
+
+> Directly addressing the $370M technical debt crisis and the enterprise security gap.
+
+### 🌍 Feature 5 — Multi-Language Pipeline (7 Languages)
+
+The Developer Agent now generates **idiomatic, production-ready code** in any of these languages — auto-detected from your requirements:
+
+| Language | Icon | Frameworks | Test Framework | Auto-Detected Keywords |
+|----------|------|-----------|---------------|----------------------|
+| **TypeScript** | 🟦 | Next.js, Express, NestJS, Hono | Jest / Vitest | react, nextjs, typescript, web |
+| **Python** | 🐍 | FastAPI, Django, Flask, Celery | pytest | python, fastapi, django, ml, ai |
+| **Go** | 🐹 | Gin, Echo, Fiber, stdlib | testing + testify | go, golang, grpc, goroutine |
+| **Java** | ☕ | Spring Boot 3, JPA, Security | JUnit 5 + Mockito | java, spring, enterprise, kafka |
+| **Rust** | 🦀 | Axum, Tokio, SQLx, Serde | cargo test | rust, axum, wasm, systems |
+| **Ruby** | 💎 | Rails 7, Sidekiq, Devise | RSpec + FactoryBot | ruby, rails, activerecord |
+| **PHP** | 🐘 | Laravel 11, Symfony | Pest + PHPUnit | php, laravel, eloquent |
+
+**How it works:** Requirements Analyst output is scanned for language keywords → best match selected → language-specific idiom prompt injected into Developer Agent system prompt before code generation.
+
+```
+You: "Build a REST API for a todo app"
+        ↓
+Auto-detected: TypeScript (keywords: api, rest)
+Language skill injected: "Use strict TypeScript, Zod validation,
+                          async/await, separate route/service/repository layers..."
+        ↓
+Developer Agent writes idiomatic TypeScript code ✅
+```
+
+---
+
+### 🏗️ Feature 2 — Technical Debt Scanner Agent
+
+Runs **automatically after every pipeline** as a non-blocking parallel task. Scores your generated code across 6 debt categories and produces a **prioritized business backlog**.
+
+```
+🏗️ Grade: B  |  Score: 7.2/10  |  Est. 14 hours to remediate
+```
+
+**6 Debt Categories Measured:**
+
+| Category | What It Catches |
+|----------|----------------|
+| 🏛️ Architectural | God objects, tight coupling, missing abstractions, no DI |
+| 🧪 Testing | Missing tests, brittle assertions, no edge cases, no integration tests |
+| 📝 Documentation | No JSDoc, undocumented APIs, missing README |
+| 🔒 Security | Hardcoded secrets, missing validation, no rate limiting, SQL risks |
+| 📦 Dependency | Outdated packages, known CVEs, excessive deps |
+| ⚡ Performance | N+1 queries, missing caching, blocking async ops, memory leaks |
+
+**Output:**
+```json
+{
+  "debtScore": 7.2,
+  "grade": "B",
+  "summary": "Code is functional with good structure. Testing and documentation debt are the primary concerns.",
+  "hotspots": [
+    { "type": "testing", "severity": "high", "description": "No integration tests for auth routes", "effort": "M" }
+  ],
+  "backlogItems": [
+    { "title": "Add Jest integration tests for /api/auth", "businessOutcome": "Prevents auth regressions in production", "storyPoints": 3 }
+  ]
+}
+```
+
+---
+
+### ⚖️ Feature 4 — Compliance Agent (GDPR · HIPAA · PCI-DSS · SOC 2 · OWASP · DPDP)
+
+**The enterprise blocker is gone.** Every generated codebase is automatically checked against 6 major compliance frameworks.
+
+```
+Pipeline Flow:
+Security Reviewer → Compliance Agent → Testing Agent → Deployment
+                          ↓
+              CRITICAL violation? → Block Pipeline 🔴
+              HIGH violation?    → HITL Required 🟡  
+              MEDIUM/LOW?        → Warning Only  🟢
+```
+
+| Framework | What Gets Checked |
+|-----------|------------------|
+| **OWASP Top 10** | A01-Broken Access Control, A02-Crypto Failures, A03-Injection, A07-Auth Failures |
+| **GDPR** | Data minimization, consent, right to erasure, cross-border transfers |
+| **HIPAA** | PHI encryption, access controls, audit logs, minimum necessary standard |
+| **PCI-DSS** | Cardholder data protection, network segmentation, key management |
+| **SOC 2** | Security (CC6), Confidentiality (C1), Availability (A1), Privacy (P1-P8) |
+| **DPDP Act** | Data fiduciary obligations, consent, data principal rights (India) |
+
+**Unlocks fintech, healthcare, legal, and government sectors for your projects.**
+
+---
+
+### 🖼️ Feature 3 — Vision-to-Code (Upload Design → Get Code)
+
+**The #1 sprint killer is building the wrong thing.** Now you can show the AI exactly what you want.
+
+```
+You upload: Figma screenshot / wireframe / hand-drawn sketch / UI mockup
+     ↓
+POST /api/vision + your framework/language choices
+     ↓
+Llama 4 Maverick (vision model) analyzes layout, spacing, colors, typography
+     ↓
+You get: Complete, responsive, accessible component code ✅
+```
+
+**Supported input types:**
+- 📸 Figma design exports (PNG, JPG, WEBP)
+- ✏️ Hand-drawn wireframes (photographed)
+- 🖥️ Existing UI screenshots (for replication or migration)
+- 📄 PDF mockup pages
+
+**Options:** Framework (React/Next.js/Vue/Svelte/Angular/Vanilla) · Language (7 supported) · Style Library (Tailwind/MUI/shadcn/Chakra/CSS Modules)
+
+---
+
+### 💰 Feature 7 — ROI Intelligence Dashboard
+
+> *"We simply cannot afford more AI investments that operate in the dark."* — Flexera CIO, Jan 2026
+
+Every pipeline run now comes with a **board-ready ROI report** to justify your AI investment.
+
+**Metrics Calculated Per Run:**
+
+```
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  ROI Intelligence Dashboard
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  Hours Saved:          23.5h    (93% time reduction)
+  Net Savings:          $2,800   per feature
+  LLM Cost:             $0.003   (Groq free tier)
+  ROI Multiple:         933x
+  Sprint Days Saved:    2.9 days
+  Annualized Value:     $145,000 /yr projected
+
+  Cumulative (all runs):
+  Total Hours Saved:    187h
+  Total Savings:        $22,400
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+```
+
+History persists in `localStorage`. Cumulative savings grow with every run. Annualized value projected from your actual usage frequency.
+
+---
+
+### 🆕 On-Demand Analysis Endpoint
+
+**POST `/api/analyze`** — run technical debt + compliance analysis on ANY code, anytime:
+
+```json
+// Request
+{
+  "code": "your generated or existing code here",
+  "language": "python",
+  "runDebt": true,
+  "runCompliance": true,
+  "complianceFrameworks": ["OWASP_TOP10", "GDPR", "HIPAA"],
+  "industry": "healthcare"
+}
+
+// Response
+{
+  "debtScan": { "report": { "grade": "B", "debtScore": 7.1, "hotspots": [...] } },
+  "complianceScan": { "report": { "overallScore": 82, "overallStatus": "WARNING", "frameworks": [...] } }
+}
+```
+
+---
+
+## 🤖 The 8 Agents
+
+| # | Agent | Model | Role | Max Tokens |
+|---|-------|-------|------|------------|
+| 0 | 🧭 **Router / Classifier** | `llama-3.1-8b-instant` | Classifies intent → routes to optimal pipeline subset (4 modes) | 512 |
+| 1 | 🔍 **Requirements Analyst** | `llama-3.1-8b-instant` | Parses English → structured JSON specs + Zod validation | 2,048 |
+| 2 | 📋 **Task Planner** | `llama-4-scout-17b` | Breaks specs → prioritized task list with dependencies | 2,048 |
+| 3 | 💻 **Developer Agent** | `qwen/qwen3-32b` | Writes code · RAG-grounded · web search · **7-language support** · **live streaming** | 4,096 |
+| 4 | 🔎 **Code Reviewer** | `llama-3.3-70b-versatile` | Reviews code · lint tool · HITL gate · up to 3 revision loops | 2,048 |
+| 5 | 🛡️ **Security Reviewer** | `llama-3.3-70b-versatile` | OWASP Top 10 scan · CRITICAL/HIGH blocks deployment | 3,072 |
+| 6 | 🧪 **Testing Agent** | `llama-3.3-70b-versatile` | Generates unit + integration tests · runs in parallel | 3,072 |
+| 7 | 🚀 **Deployment Agent** | `llama-3.1-8b-instant` | Dockerfile · docker-compose · GitHub Actions CI/CD | 2,048 |
+
+> **All 8 agents** run with exponential backoff retry (3 attempts: 2s → 4s → 8s). Every agent call is logged to the audit log.
+
+### Pipeline Routing Modes
+
+| Mode | Agents | Tokens Saved | Best For |
+|------|--------|-------------|----------|
+| `FULL_PIPELINE` | All 8 | — | New feature / app build |
+| `QUICK_FIX` | Router + Dev + Reviewer | ~60% | Bug fix, small tweak |
+| `PLAN_ONLY` | Router + Analyst + Planner | ~70% | Architecture planning |
+| `CODE_REVIEW_ONLY` | Router + Reviewer | ~80% | Paste code for review |
+
+---
+
+## 🏗️ Full Architecture
 
 ```mermaid
 flowchart TB
-    subgraph Frontend["🖥️ Frontend (Next.js App Router)"]
-        UI[RequirementInput] --> Page[page.tsx]
-        Page --> PV[PipelineView]
-        Page --> OP[OutputPanel]
-        Page --> WV[WorkspaceViewer]
-        Page --> AP[AnalyticsPanel]
-        Page --> HP[HistoryPanel]
-        Page --> HITLM["⏸️ HITLModal (Gap #1 NEW)"]
-        Page --> SP["⚙️ SettingsPanel (Gap #2 NEW)"]
-        Page --> AF["⚡ Activity Feed"]
-        Page --> RB["🧭 Route Banner"]
-        Page --> ST["🌊 Token Stream Preview (Gap #9 NEW)"]
-        Page --> GH["🐙 GitHub Push Button (Gap #5 NEW)"]
+    subgraph Input["📥 Input — Multiple Modes"]
+        TXT["📝 Text Requirement"]
+        IMG["🖼️ Image / Wireframe (F3 NEW)"]
     end
 
-    subgraph API["📡 API Layer"]
-        Page -->|POST + SSE| Orch["/api/orchestrate"]
-        Page -->|POST| HITLA["/api/hitl (Gap #1 NEW)"]
-        Page -->|POST| Deliver["/api/deliver (Gap #5 NEW)"]
-        Page -->|POST| Save["/api/workspace"]
+    subgraph Frontend["🖥️ Frontend — Premium Dark UI"]
+        Page["page.tsx — Main Orchestrator UI"]
+        PV["PipelineView — 8 Agent Cards"]
+        HITLM["⏸️ HITLModal (Gap #1)"]
+        SP["⚙️ SettingsPanel (Gap #2)"]
+        ST["🌊 Token Stream Preview (Gap #9)"]
+        VU["🖼️ VisionUploader (F3 NEW)"]
+        EAP["📊 EnhancedAnalyticsPanel (F7 NEW)"]
+        WV["WorkspaceViewer"]
+        HP["HistoryPanel"]
     end
 
-    subgraph Pipeline["🔄 Orchestration Pipeline v3"]
-        Orch --> O["orchestrator.ts"]
+    subgraph API["📡 API Routes"]
+        OR["/api/orchestrate — SSE Pipeline"]
+        HITLA["/api/hitl — HITL Decisions"]
+        DEL["/api/deliver — GitHub Push"]
+        VIS["/api/vision — Vision-to-Code (F3 NEW)"]
+        ANA["/api/analyze — Debt + Compliance (F2/F4 NEW)"]
+        WS["/api/workspace — File Save"]
+    end
 
-        O --> R0["🧭 Router Agent\nclassifyIntent()"]
-        R0 -->|FULL_PIPELINE| A1
-        R0 -->|QUICK_FIX| A3
+    subgraph Pipeline["🔄 Orchestration Pipeline v3.1"]
+        O["orchestrator.ts"]
 
-        subgraph Validation["✅ Zod Validation (Gap #3 NEW)"]
-            VA["AnalystOutputSchema"]
-            VP["PlannerOutputSchema"]
-            VR["ReviewerOutputSchema"]
-            VS["SecurityOutputSchema"]
+        R0["🧭 Router Agent\nclassifyIntent()"]
+
+        subgraph LangDetect["🌍 Language Detection (F5 NEW)"]
+            LD["detectLanguage()\ngetSkillPrompt()"]
         end
 
-        subgraph Memory["🧠 Agent Memory (Gap #8 NEW)"]
-            MEM["memory.ts\nlocalStorage preferences"]
-        end
-        MEM -->|user context| A1
-
-        subgraph Audit["📋 Audit Log (Gap #7 NEW)"]
-            AL["audit.ts\nAuditLog class"]
+        subgraph Mem["🧠 Memory (Gap #8)"]
+            MEM["memory.ts — localStorage prefs"]
         end
 
-        A1["🔍 Requirements Analyst"] -->|✅ validate| VA
-        VA --> A2["📋 Task Planner"]
-        A2 -->|✅ validate| VP
-        VP --> A3["💻 Developer\n🌊 streamText (Gap #9)"]
-        A3 -->|stage_token SSE| ST
-        A3 --> A4["🔎 Code Reviewer"]
-        A4 -->|✅ validate| VR
-        VR -->|CHANGES_REQUESTED| A3
-        VR -->|APPROVED| HITLG["⏸️ HITL Gate (Gap #1)"]
-        HITLG -->|approved| A7["🛡️ Security Reviewer (Gap #4 NEW)"]
-        A7 -->|✅ validate| VS
-        VS -->|CRITICAL/HIGH BLOCK| ERR[Pipeline Blocked]
-        VS -->|MEDIUM/LOW PASS| PAR["⚡ Parallel Group (Gap #6)"]
-        PAR --> A5["🧪 Testing Agent"]
-        A5 --> A6["🚀 Deployment Agent"]
+        subgraph Rag["📚 RAG"]
+            RAG["retrieveRelevantChunks()\nTF-IDF cosine similarity"]
+        end
 
-        A1 & A2 & A3 & A4 & A7 & A5 & A6 -->|log events| AL
+        A1["🔍 Analyst\n+ Zod validation"]
+        A2["📋 Planner\n+ Zod validation"]
+        A3["💻 Developer\n+ language skill\n+ streamText"]
+        A4["🔎 Code Reviewer\n+ lint tool\n+ Zod validation"]
+        HITLG["⏸️ HITL Gate"]
+        A5["🛡️ Security Reviewer\n+ OWASP scan"]
+        A6["⚖️ Compliance Agent\nGDPR/HIPAA/PCI/SOC2 (F4 NEW)"]
+
+        subgraph Parallel["⚡ Parallel Group (Gap #6)"]
+            A7["🧪 Testing Agent"]
+            DS["🏗️ Debt Scanner (F2 NEW)"]
+        end
+
+        A8["🚀 Deployment Agent"]
+
+        subgraph ROI["💰 ROI (F7 NEW)"]
+            ROIC["roi.ts — computeROI()"]
+        end
     end
 
-    subgraph LLM["🧠 LLM Providers (Gap #2 NEW)"]
-        R0 -.-|llama-3.1-8b| G[Groq default]
-        A1 -.-|configurable| P2[Groq / OpenAI / Anthropic / Ollama]
-        A3 -.-|qwen3-32b + streamText| G
-        A4 -.-|llama-3.3-70b| G
-        A7 -.-|llama-3.3-70b| G
+    subgraph Audit["📋 Audit Log (Gap #7)"]
+        AL["Every event → AuditLog.log()"]
     end
 
+    TXT --> Page
+    IMG --> VU --> VIS
+    Page --> OR
+    OR --> O
+    O --> R0 --> LangDetect --> Mem --> Rag
+    Rag --> A1 --> A2 --> A3
+    LangDetect -->|skill prompt| A3
+    A3 --> A4
+    A4 -->|CHANGES| A3
+    A4 -->|APPROVED| HITLG
+    HITLG --> A5 --> A6
+    A6 -->|PASS| Parallel
+    Parallel --> A8
+    A8 --> ROI
+    O --> AL
+    OR --> HITLA
+    OR --> DEL
+    OR --> ANA
+
+    style Input fill:#1a1225,color:#e0e0ff
     style Frontend fill:#1a1a2e,color:#e0e0ff
     style API fill:#16213e,color:#e0e0ff
-    style Pipeline fill:#0f3460,color:#e0e0ff
-    style LLM fill:#533483,color:#e0e0ff
-    style Validation fill:#1a2a1e,color:#e0e0ff
-    style Memory fill:#2a1a2e,color:#e0e0ff
-    style Audit fill:#2a2a1a,color:#e0e0ff
+    style Pipeline fill:#0f1e3d,color:#e0e0ff
+    style Audit fill:#1e2a1a,color:#e0e0ff
+    style ROI fill:#1e2a1a,color:#e0e0ff
+    style Parallel fill:#1a2e1a,color:#e0e0ff
+    style LangDetect fill:#1a1e2e,color:#e0e0ff
+    style Mem fill:#2a1a2e,color:#e0e0ff
+    style Rag fill:#1e1a2e,color:#e0e0ff
 ```
-
----
-
-## 🤖 The 8 Agents (v3)
-
-| # | Agent | Model | Purpose | Max Tokens | Gap |
-|---|-------|-------|---------|------------|-----|
-| 0 | 🧭 **Router / Classifier** | `llama-3.1-8b-instant` | Classifies intent → routes to optimal pipeline subset | 512 | v2 |
-| 1 | 🔍 **Requirements Analyst** | `llama-3.1-8b-instant` | Parses raw English → structured JSON + Zod-validated output | 2,048 | v2 |
-| 2 | 📋 **Task Planner** | `llama-4-scout-17b-16e-instruct` | Breaks specs → ordered tasks + Zod-validated output | 2,048 | v2 |
-| 3 | 💻 **Developer Agent** | `qwen/qwen3-32b` | Writes code with RAG + web search + **live token streaming (Gap #9)** | 4,096 | v2 |
-| 4 | 🔎 **Code Reviewer** | `llama-3.3-70b-versatile` | Reviews code + triggers HITL gate + Zod-validated output | 2,048 | v2 |
-| 5 | 🛡️ **Security Reviewer** *(New!)* | `llama-3.3-70b-versatile` | OWASP Top 10 scan — CRITICAL/HIGH blocks deployment **(Gap #4)** | 3,072 | v3 |
-| 6 | 🧪 **Testing Agent** | `llama-3.3-70b-versatile` | Auto-generates unit & integration tests, runs in parallel **(Gap #6)** | 3,072 | v2 |
-| 7 | 🚀 **Deployment Agent** | `llama-3.1-8b-instant` | Generates Dockerfile, docker-compose.yml, CI/CD pipelines | 2,048 | v2 |
-
-> **All agents** are individually wrapped in `withRetry()` — up to 3 attempts with exponential backoff (2s → 4s → 8s). Every agent is logged to the audit log with timestamps and token counts.
-
-### v3 Pipeline Flow Modes
-
-| Mode | Agents Run | Token Savings | Best For |
-|------|-----------|---------------|----------|
-| `FULL_PIPELINE` | All 8 (incl. Security) | — | Build a new feature / app |
-| `QUICK_FIX` | Router + Dev + Reviewer | ~60% | Small bug fix, style tweak |
-| `PLAN_ONLY` | Router + Analyst + Planner | ~70% | Architecture planning |
-| `CODE_REVIEW_ONLY` | Router + Reviewer | ~80% | Review pasted code |
 
 ---
 
 ## 🚀 Quick Start
 
 ### Prerequisites
+- **Node.js 18+** — [Download](https://nodejs.org/)
+- **Groq API Key** — Free at [console.groq.com](https://console.groq.com/)
 
-- **Node.js** 18+ ([Download](https://nodejs.org/))
-- **Groq API Key** (Free — [Get one here](https://console.groq.com/))
-
-### Installation
+### 1. Clone & Install
 
 ```bash
-# 1. Clone the repository
 git clone https://github.com/ParthivPandya/multi-agent-orchestrator.git
 cd multi-agent-orchestrator/multi-agent-system
-
-# 2. Install dependencies
 npm install
+```
 
-# 3. Set up environment variables
+### 2. Configure
+
+```bash
 cp .env.example .env.local
 ```
 
-### Configuration
-
-Edit `.env.local` and add your Groq API key:
-
 ```env
-# Required — Get your free key at https://console.groq.com
+# .env.local
+
+# ✅ Required — get free key at https://console.groq.com
 GROQ_API_KEY=gsk_your_api_key_here
 
-# Optional — Add additional providers if you want to use them
+# Optional — for additional LLM providers
 # OPENAI_API_KEY=sk-...
 # ANTHROPIC_API_KEY=sk-ant-...
 ```
 
-> **Note:** Additional provider API keys (OpenAI, Anthropic) can also be entered in the **Settings Panel → Providers** tab. They are stored in `localStorage` client-side only.
+> **Tip:** OpenAI and Anthropic keys can also be entered in **Settings → Providers** tab at runtime. They stay in `localStorage` — never sent to any server.
 
-### Run
+### 3. Run
 
 ```bash
-# Development server
 npm run dev
-
-# Open in browser
 # → http://localhost:3000
 ```
 
-### Build for Production
+### 4. Deploy (One Click)
 
-```bash
-npm run build
-npm start
-```
+[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https://github.com/ParthivPandya/multi-agent-orchestrator&env=GROQ_API_KEY&envDescription=Get%20your%20free%20Groq%20API%20key&envLink=https://console.groq.com/)
 
 ---
 
-## 📁 Project Structure (v3)
+## 📁 Project Structure
 
 ```
 multi-agent-system/
 ├── src/
 │   ├── app/
-│   │   ├── page.tsx                          # Main UI — all 9 gaps wired (HITL, streaming, settings…)
-│   │   ├── layout.tsx                        # Root layout with SEO metadata
-│   │   ├── globals.css                       # Premium dark design system + animations
+│   │   ├── page.tsx                          # Main UI — all 14 features integrated
+│   │   ├── globals.css                       # Premium glassmorphism dark theme
 │   │   └── api/
-│   │       ├── orchestrate/route.ts          # POST — 8-agent pipeline + hitlEnabled + SSE
-│   │       ├── hitl/route.ts                 # POST — HITL decision endpoint (Gap #1 NEW)
-│   │       ├── deliver/route.ts              # POST — GitHub MCP delivery (Gap #5 NEW)
-│   │       ├── agent/route.ts                # POST — Test individual agents
-│   │       └── workspace/
-│   │           ├── route.ts                  # GET/POST — List & save workspace files
-│   │           └── [project]/file/
-│   │               └── route.ts              # GET — Read individual file content
+│   │       ├── orchestrate/route.ts          # SSE pipeline — all agents
+│   │       ├── hitl/route.ts                 # HITL decision endpoint
+│   │       ├── deliver/route.ts              # GitHub MCP push
+│   │       ├── vision/route.ts               # 🆕 Vision-to-Code (F3)
+│   │       ├── analyze/route.ts              # 🆕 Debt + Compliance on-demand (F2, F4)
+│   │       └── workspace/route.ts            # File save/list
 │   ├── lib/
-│   │   ├── orchestrator.ts                   # 🎯 v3 Pipeline controller — all 9 gaps integrated
-│   │   ├── hitl.ts                           # ⏸️ HITL promise resolver map (Gap #1 NEW)
-│   │   ├── audit.ts                          # 📋 AuditLog event recorder (Gap #7 NEW)
-│   │   ├── memory.ts                         # 🧠 Cross-session preference learning (Gap #8 NEW)
-│   │   ├── context.ts                        # Shared state between agents
-│   │   ├── fileParser.ts                     # Extracts code files from markdown output
-│   │   ├── history.ts                        # localStorage pipeline history + analytics
-│   │   ├── types/index.ts                    # TypeScript types — all v3 types included
+│   │   ├── orchestrator.ts                   # 🎯 v3.1 pipeline controller
+│   │   ├── hitl.ts                           # HITL promise resolver
+│   │   ├── audit.ts                          # Audit log recorder
+│   │   ├── memory.ts                         # Cross-session memory
+│   │   ├── roi.ts                            # 🆕 ROI calculator (F7)
 │   │   ├── agents/
-│   │   │   ├── routerAgent.ts                # 🧭 Router/Classifier — intent classification
-│   │   │   ├── requirementsAnalyst.ts        # Agent 1 — Requirement parsing
-│   │   │   ├── taskPlanner.ts                # Agent 2 — Task decomposition
-│   │   │   ├── developer.ts                  # Agent 3 — Code generation + streamText (Gap #9)
-│   │   │   ├── codeReviewer.ts               # Agent 4 — Code review + RAG + lint
-│   │   │   ├── securityReviewer.ts           # Agent 5 — OWASP security scan (Gap #4 NEW)
-│   │   │   ├── testingAgent.ts               # Agent 6 — Unit & integration test generation
-│   │   │   └── deploymentAgent.ts            # Agent 7 — Deployment configs
-│   │   ├── providers/
-│   │   │   └── index.ts                      # 🔑 Multi-provider registry (Gap #2 NEW)
+│   │   │   ├── routerAgent.ts                # Intent classifier
+│   │   │   ├── requirementsAnalyst.ts        # Agent 1
+│   │   │   ├── taskPlanner.ts                # Agent 2
+│   │   │   ├── developer.ts                  # Agent 3 + streaming + language skills
+│   │   │   ├── codeReviewer.ts               # Agent 4 + lint
+│   │   │   ├── securityReviewer.ts           # Agent 5 — OWASP
+│   │   │   ├── testingAgent.ts               # Agent 6 — parallel
+│   │   │   ├── deploymentAgent.ts            # Agent 7
+│   │   │   ├── debtScanner.ts                # 🆕 Technical Debt Scanner (F2)
+│   │   │   └── complianceAgent.ts            # 🆕 GDPR/HIPAA/PCI/SOC2 (F4)
+│   │   ├── skills/
+│   │   │   └── languages.ts                  # 🆕 7-language skill registry (F5)
+│   │   ├── providers/index.ts                # Multi-provider LLM factory
 │   │   ├── validation/
-│   │   │   ├── schemas.ts                    # ✅ Zod schemas for all agents (Gap #3 NEW)
-│   │   │   └── handoff.ts                    # Handoff validator utility (Gap #3 NEW)
-│   │   ├── prompts/
-│   │   │   ├── security.prompt.ts            # 🛡️ OWASP security review prompt (Gap #4 NEW)
-│   │   │   ├── analyst.prompt.ts             # System prompt for Agent 1
-│   │   │   ├── planner.prompt.ts             # System prompt for Agent 2
-│   │   │   ├── developer.prompt.ts           # System prompt for Agent 3
-│   │   │   ├── reviewer.prompt.ts            # System prompt for Agent 4
-│   │   │   ├── testing.prompt.ts             # System prompt for Agent 6
-│   │   │   └── deployer.prompt.ts            # System prompt for Agent 7
-│   │   ├── tools/                            # ⚙️ Agentic Tools
-│   │   │   ├── index.ts
-│   │   │   ├── searchWeb.ts                  # DuckDuckGo Instant Answer API
-│   │   │   ├── readFile.ts                   # Sandboxed workspace file reader
-│   │   │   └── lintCode.ts                   # 13-rule static linter (0-100 score)
-│   │   ├── rag/                              # 📚 RAG Knowledge Base
-│   │   │   ├── knowledgeBase.ts              # Curated doc chunks (Next.js 15, React 19…)
-│   │   │   └── retriever.ts                  # TF-IDF cosine similarity retrieval
-│   │   ├── flows/                            # 🔀 Flows DSL
-│   │   │   └── types.ts                      # FlowDefinition, BUILT_IN_FLOWS (incl. Security)
-│   │   └── workspace/
-│   │       └── checkpoint.ts                 # Save/load/list checkpoints
+│   │   │   ├── schemas.ts                    # Zod schemas (Zod v4 compatible)
+│   │   │   └── handoff.ts                    # validateHandoff() utility
+│   │   ├── prompts/                          # System prompts for all agents
+│   │   ├── tools/                            # searchWeb, lintCode, readFile
+│   │   ├── rag/                              # TF-IDF knowledge base
+│   │   ├── flows/types.ts                    # Pipeline flow DSL
+│   │   └── workspace/checkpoint.ts           # Save/load/resume
 │   └── components/
-│       ├── RequirementInput.tsx              # Input form with example prompts
-│       ├── PipelineView.tsx                  # v3: Security agent + HITL banner + parallel lanes
-│       ├── AgentCard.tsx                     # v3: waiting_hitl status support
-│       ├── HITLModal.tsx                     # ⏸️ HITL approval modal (Gap #1 NEW)
-│       ├── SettingsPanel.tsx                 # ⚙️ Provider/model/delivery/memory settings (Gaps #2,5,8)
-│       ├── OutputPanel.tsx                   # Formatted/Raw/JSON output tabs
-│       ├── WorkspaceViewer.tsx               # File tree + code viewer + save + ZIP export
-│       ├── AnalyticsPanel.tsx                # Per-agent token/latency bar chart
-│       └── HistoryPanel.tsx                  # Slide-in past-runs panel with restore
-├── .workspace/
-│   └── checkpoints/                          # 💾 Pipeline checkpoint files (auto-created)
-├── workspace/                                # 📂 Generated projects are saved here
-├── .env.example                              # Environment variable template
-├── package.json
-└── tsconfig.json
+│       ├── RequirementInput.tsx
+│       ├── PipelineView.tsx                  # 8-agent pipeline view
+│       ├── AgentCard.tsx                     # Status-aware agent card
+│       ├── HITLModal.tsx                     # HITL approval modal
+│       ├── SettingsPanel.tsx                 # Provider/model/delivery/memory settings
+│       ├── VisionUploader.tsx                # 🆕 Vision-to-Code uploader (F3)
+│       ├── EnhancedAnalyticsPanel.tsx        # 🆕 ROI + Debt + Compliance dashboard (F7)
+│       ├── OutputPanel.tsx
+│       ├── WorkspaceViewer.tsx               # File tree + ZIP export
+│       ├── AnalyticsPanel.tsx
+│       └── HistoryPanel.tsx
 ```
 
 ---
 
 ## 📡 API Reference
 
-### `POST /api/orchestrate`
+### POST `/api/orchestrate`
 
-Runs the pipeline with intelligent routing and real-time SSE streaming.
+Main pipeline. Returns Server-Sent Events stream.
 
-**Request:**
 ```json
+// Request
 {
-  "requirement": "Build a REST API for a todo app with authentication",
-  "resumeCheckpointId": "optional-checkpoint-id-for-resume",
-  "hitlEnabled": true
+  "requirement": "Build a FastAPI REST API for a todo app with JWT auth",
+  "hitlEnabled": true,
+  "resumeCheckpointId": "optional-for-resume"
 }
 ```
 
-**Response:** Server-Sent Events stream
+**SSE Event Types:**
 
-| Event Type | Description | Gap |
-|------------|-------------|-----|
-| `route_decision` | Router classified intent — mode, reasoning, skipped agents, confidence | v2 |
-| `rag_retrieval` | RAG retrieved relevant docs — source names and chunks | v2 |
-| `tool_call` / `tool_result` | Agent tool call fired and returned | v2 |
-| `checkpoint_saved` | Pipeline state saved to disk | v2 |
-| `stage_start` | Agent has started processing | v1 |
-| `stage_complete` | Agent finished — includes output, token count, latency | v1 |
-| `stage_error` | Agent encountered an unrecoverable error (after retries) | v1 |
-| `stage_token` | Developer agent streaming a single token chunk | Gap #9 NEW |
-| `hitl_requested` | Pipeline paused — includes requestId and agentOutput | Gap #1 NEW |
-| `hitl_resolved` | Human submitted a decision | Gap #1 NEW |
-| `pipeline_blocked` | Security reviewer blocked deployment | Gap #4 NEW |
-| `parallel_group_start/complete` | Parallel agent group started or finished | Gap #6 NEW |
-| `validation_error` | Agent output failed Zod schema validation (non-blocking) | Gap #3 NEW |
-| `memory_loaded` | Memory preferences loaded and injected | Gap #8 NEW |
-| `retry_attempt` | An agent failed and is being retried | v2 |
-| `iteration_info` | Developer↔Reviewer loop iteration update | v1 |
-| `pipeline_complete` | All agents finished | v1 |
-| `final_result` | Complete results payload + checkpointId + routeDecision + auditLog | v3 |
+| Event | Description |
+|-------|-------------|
+| `route_decision` | Router classified intent — mode, confidence, skipped agents |
+| `stage_start` / `stage_complete` / `stage_error` | Agent lifecycle events |
+| `stage_token` | Developer agent streaming token (Gap #9) |
+| `hitl_requested` | Pipeline paused for human approval (Gap #1) |
+| `pipeline_blocked` | Security blocked deployment (Gap #4) |
+| `validation_error` | Zod schema validation warning (Gap #3) |
+| `parallel_group_start/complete` | Parallel execution (Gap #6) |
+| `memory_loaded` | Memory preferences injected (Gap #8) |
+| `iteration_info` | Language detection, debt scan, dev/review loop info |
+| `final_result` | Complete results + `debtReport` + `detectedLanguage` + `auditLog` |
 
-### `POST /api/hitl` *(Gap #1 New)*
+### POST `/api/hitl`
 
-Submit a human decision to resume a paused pipeline.
+Submit human decision to resume paused pipeline.
 
-**Request:**
 ```json
-{
-  "requestId": "hitl_1234567890_abc12",
-  "decision": "approved",
-  "feedback": "Looks good to me, proceed",
-  "decidedAt": 1234567890000
-}
+{ "requestId": "hitl_xxx", "decision": "approved", "feedback": "Looks great!" }
 ```
-Valid decisions: `approved` | `rejected` | `changes_requested`
+Decisions: `approved` | `rejected` | `changes_requested`
 
-### `POST /api/deliver` *(Gap #5 New)*
+### POST `/api/deliver`
 
-Push generated files to a GitHub repository.
+Push generated files to GitHub.
 
-**Request:**
 ```json
 {
   "target": "github",
-  "config": {
-    "token": "ghp_...",
-    "owner": "your-github-username",
-    "repoName": "my-generated-app",
-    "description": "Generated by Multi-Agent Orchestrator",
-    "private": false
-  },
-  "files": [
-    { "path": "src/index.ts", "content": "..." },
-    { "path": "src/index.test.ts", "content": "..." },
-    { "path": "Dockerfile", "content": "..." }
-  ]
+  "config": { "token": "ghp_...", "owner": "you", "repoName": "my-app" },
+  "files": [{ "path": "src/index.ts", "content": "..." }]
 }
 ```
 
-**Response:**
-```json
-{ "success": true, "repoUrl": "https://github.com/you/my-app", "commitSha": "abc123..." }
+### POST `/api/vision` *(Feature 3)*
+
+Convert design image to code. Accepts `multipart/form-data`.
+
+```
+image         File      — PNG/JPG/WEBP (required)
+framework     string    — react|nextjs|vue|svelte|angular|vanilla
+language      string    — typescript|python|go|java|rust|ruby|php
+styleLibrary  string    — tailwind|mui|shadcn|chakra|css-modules
+context       string    — optional extra instructions
 ```
 
-### `POST /api/workspace`
+### POST `/api/analyze` *(Features 2 & 4)*
 
-Save generated project files to disk.
+On-demand technical debt + compliance analysis.
 
-**Request:**
 ```json
 {
-  "projectName": "my-todo-app",
-  "files": [
-    { "path": "src/index.ts", "content": "..." }
-  ]
+  "code": "your code here",
+  "language": "python",
+  "runDebt": true,
+  "runCompliance": true,
+  "complianceFrameworks": ["GDPR", "HIPAA", "OWASP_TOP10"],
+  "industry": "healthcare"
 }
 ```
 
 ---
 
-## 🛡️ Rate Limiting & Resilience
+## 🛡️ Resilience & Rate Limiting
 
 | Setting | Value |
 |---------|-------|
 | Inter-agent delay | 1,500ms (prevents Groq rate limits) |
-| Max retry attempts per agent | **3** |
-| Retry backoff schedule | 2s → 4s → 8s (exponential) |
+| Retry attempts per agent | **3** |
+| Retry backoff | 2s → 4s → 8s |
 | Max review iterations | 3 |
 | HITL timeout | 10 minutes (then auto-approved) |
-| Testing Agent failure | **Non-fatal** — pipeline continues |
-| Security Agent block level | CRITICAL & HIGH only |
-| Router failure | **Always falls back to `FULL_PIPELINE`** |
-| Web search timeout | 5s (non-blocking) |
-| RAG context cap | Top-3 chunks per query |
-| Memory project history | Last 20 runs |
-| Groq free tier RPM | 30 requests/min |
-| Max output per agent | 512 – 4,096 tokens |
+| Security block level | CRITICAL & HIGH only |
+| Compliance block | Critical violations only |
+| Debt scan | Non-blocking (pipeline continues always) |
+| Vision model | Llama 4 Maverick (multimodal) |
+| Router failure | Falls back to `FULL_PIPELINE` |
+| Testing failure | Non-fatal — pipeline continues |
 
 ---
 
-## 🏆 How Does It Compare?
+## 🏆 Feature Comparison
 
-| Feature | **This Project v3** | CrewAI | AWS Agent Squad | ComposioHQ | Kore.ai |
-|---------|:---------------:|:-------:|:-------:|:------:|:------:|
-| 💸 Completely Free | ✅ Groq free tier | ❌ | ❌ | ❌ | ❌ |
-| 🖥️ Beautiful Web UI | ✅ Premium dark theme | ⚠️ CLI | ⚠️ CLI | ⚠️ CLI | ⚠️ Enterprise |
-| ⚡ Real-time Streaming | ✅ SSE + token stream | ❌ | ❌ | ❌ | ❌ |
-| 🧭 Intelligent Routing | ✅ 4-mode classifier | ⚠️ Partial | ✅ Yes | ❌ | ❌ |
-| 📚 RAG Knowledge | ✅ In-memory TF-IDF | ✅ Yes | ❌ | ❌ | ✅ Enterprise |
-| ⚙️ Agentic Tools | ✅ Web + lint + files | ✅ Yes | ⚠️ Partial | ✅ Yes | ⚠️ Partial |
-| 💾 Resume on Failure | ✅ Checkpoints | ❌ | ❌ | ⚠️ Partial | ❌ |
-| ⏸️ Human-in-the-Loop | ✅ Approval gate | ❌ | ❌ | ❌ | ✅ Enterprise |
-| 🛡️ Security Review | ✅ OWASP dedicated agent | ❌ | ❌ | ❌ | ⚠️ Partial |
-| 🔑 Multi-Provider LLM | ✅ Groq+OpenAI+Anthropic+Ollama | ✅ Yes | ❌ | ✅ Yes | ❌ |
-| ✅ Schema Validation | ✅ Zod at every handoff | ❌ | ❌ | ❌ | ❌ |
-| 🐙 GitHub Push | ✅ MCP delivery | ❌ | ❌ | ✅ Yes | ❌ |
-| ⚡ Parallel Execution | ✅ Promise.allSettled | ✅ Yes | ⚠️ | ❌ | ⚠️ |
-| 📋 Audit Log Export | ✅ Full JSON audit log | ❌ | ❌ | ❌ | ✅ Enterprise |
-| 🧠 Agent Memory | ✅ Cross-session learning | ❌ | ❌ | ❌ | ✅ Enterprise |
-| 🌊 Token Streaming | ✅ streamText live preview | ❌ | ❌ | ❌ | ❌ |
-| 🔁 Self-Correcting Code | ✅ Dev↔Review loop | ✅ Yes | ⚠️ | ⚠️ | ⚠️ |
-| 🧪 Auto Test Generation | ✅ Dedicated agent | ❌ | ❌ | ❌ | ❌ |
-| 🛡️ Retry on Failure | ✅ Exp. backoff | ❌ | ❌ | ❌ | ⚠️ |
-| 📊 Analytics Dashboard | ✅ Built-in | ❌ | ❌ | ❌ | ✅ Enterprise |
-| 📦 Ready-to-Deploy Output | ✅ Docker + CI/CD | ❌ | ❌ | ❌ | ❌ |
-| 🚀 One-Click Deploy | ✅ Vercel button | ❌ | ❌ | ❌ | ❌ |
+| Feature | **This Project** | CrewAI | AWS Multi-Agent | ComposioHQ |
+|---------|:--------------:|:-------:|:-------:|:------:|
+| 💸 100% Free | ✅ | ❌ | ❌ | ❌ |
+| 🎨 Premium UI | ✅ | ⚠️ CLI | ⚠️ CLI | ⚠️ CLI |
+| 🌊 Token Streaming | ✅ | ❌ | ❌ | ❌ |
+| 🧭 Intelligent Routing | ✅ 4 modes | ⚠️ | ✅ | ❌ |
+| 🌍 Multi-Language (7 langs) | ✅ | ❌ | ❌ | ❌ |
+| 🖼️ Vision-to-Code | ✅ | ❌ | ❌ | ❌ |
+| 🏗️ Technical Debt Grading | ✅ A-F grade | ❌ | ❌ | ❌ |
+| ⚖️ Compliance (GDPR/HIPAA/PCI) | ✅ | ❌ | ❌ | ❌ |
+| 💰 ROI Dashboard | ✅ | ❌ | ❌ | ❌ |
+| ⏸️ Human-in-the-Loop | ✅ modal | ❌ | ❌ | ❌ |
+| 🛡️ Security Review (OWASP) | ✅ | ❌ | ❌ | ❌ |
+| 📚 RAG Knowledge | ✅ TF-IDF | ✅ | ❌ | ❌ |
+| ⚙️ Agentic Tools | ✅ | ✅ | ⚠️ | ✅ |
+| 💾 Resume on Failure | ✅ checkpoint | ❌ | ❌ | ⚠️ |
+| 🐙 GitHub Push | ✅ | ❌ | ❌ | ✅ |
+| ⚡ Parallel Execution | ✅ | ✅ | ⚠️ | ❌ |
+| 📋 Audit Log Export | ✅ JSON | ❌ | ❌ | ❌ |
+| 🧠 Agent Memory | ✅ | ❌ | ❌ | ❌ |
+| 🧪 Auto Test Generation | ✅ | ❌ | ❌ | ❌ |
+| 📦 Docker + CI/CD Output | ✅ | ❌ | ❌ | ❌ |
 
 ---
 
@@ -635,131 +630,157 @@ Save generated project files to disk.
 | Technology | Purpose |
 |------------|---------|
 | [Next.js 16](https://nextjs.org/) | Full-stack React framework (App Router) |
-| [TypeScript 5](https://www.typescriptlang.org/) | Type-safe development |
-| [Vercel AI SDK v6](https://sdk.vercel.ai/) | Unified LLM interface (`generateText` + `streamText`) |
-| [@ai-sdk/groq](https://www.npmjs.com/package/@ai-sdk/groq) | Groq API provider (default) |
-| [Zod](https://zod.dev/) | Schema validation at agent handoffs (Gap #3) |
-| [Groq Cloud](https://groq.com/) | Ultra-fast LLM inference (free tier) |
-| TF-IDF (custom) | In-memory vector similarity for RAG — zero dependencies |
-| DuckDuckGo API | Free web search for Developer agent tool calls |
-| GitHub REST API | MCP code delivery target (Gap #5) |
+| [TypeScript 5](https://www.typescriptlang.org/) | Type-safe development across all 60+ files |
+| [Vercel AI SDK v6](https://sdk.vercel.ai/) | `generateText` + `streamText` — unified LLM interface |
+| [@ai-sdk/groq](https://npmjs.com/package/@ai-sdk/groq) | Groq API provider (default, free) |
+| [Zod v4](https://zod.dev/) | Schema validation at every agent handoff |
+| [Groq Cloud](https://groq.com/) | Ultra-fast LLM inference — free tier (30 RPM) |
+| TF-IDF (custom) | In-memory RAG — zero extra dependencies |
+| DuckDuckGo Instant API | Free web search for agentic tool calls |
+| GitHub REST API | MCP code delivery (no Octokit required) |
+| Llama 4 Maverick | Vision model for image-to-code conversion |
 | Vanilla CSS | Custom glassmorphism design system + animations |
-
----
-
-## 🚢 Deployment
-
-### Deploy to Vercel (Recommended)
-
-[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https://github.com/ParthivPandya/multi-agent-orchestrator&env=GROQ_API_KEY&envDescription=Get%20your%20free%20Groq%20API%20key&envLink=https://console.groq.com/)
-
-1. Click the button above
-2. Add your `GROQ_API_KEY` in the environment variables
-3. Deploy — you're done! 🎉
-
-> **Note:** Checkpoint persistence requires a persistent filesystem. Vercel's ephemeral filesystem means checkpoints will not survive between deployments. Use Railway, Render, or Docker for persistent checkpoints. Agent Memory (Gap #8) uses `localStorage` and always works client-side.
-
-### Deploy with Docker
-
-```bash
-# Build the image
-docker build -t multi-agent-orchestrator .
-
-# Run the container
-docker run -p 3000:3000 -e GROQ_API_KEY=your_key_here multi-agent-orchestrator
-```
 
 ---
 
 ## 🗺️ Roadmap
 
-### ✅ Completed & Shipped
+### ✅ Shipped
 
-- [x] 6-agent automated pipeline with role-specific LLM models
-- [x] Real-time SSE streaming UI with live agent progress
-- [x] Developer ↔ Reviewer feedback loop (up to 3 iterations)
-- [x] Workspace file manager with file tree viewer & save-to-disk
-- [x] Premium glassmorphism dark UI with micro-animations
-- [x] Individual agent testing API (`POST /api/agent`)
-- [x] 🧪 **Agent 6: Testing Agent** — Auto-generates unit & integration tests
-- [x] 🛡️ **Error Retry & Resilience** — Exponential backoff (2s → 4s → 8s) for all agents
-- [x] 📊 **Analytics Dashboard** — Per-agent token usage, latency bars, cost estimate
-- [x] 🕐 **Pipeline History & Persistence** — localStorage save/restore of past runs
-- [x] 📥 **ZIP Export** — One-click download of all generated files
-- [x] **v2: 🧭 Intelligent Routing** — Pre-classifier routes to optimal pipeline subset
-- [x] **v2: ⚙️ Agentic Tools** — `searchWeb`, `lintCode`, `readFile` tool ecosystem
-- [x] **v2: 📚 RAG Knowledge Base** — TF-IDF retrieval over Next.js 15, React 19, TypeScript 5, and more
-- [x] **v2: 🔀 Flows DSL** — `BUILT_IN_FLOWS` typed flow definitions
-- [x] **v2: 💾 Stateful Checkpoints** — Resume-on-failure with per-stage disk persistence
-- [x] **v3: Gap #1 ⏸️ Human-in-the-Loop** — Approval gate with 3-action modal
-- [x] **v3: Gap #2 🔑 Multi-Provider LLM** — Groq, OpenAI, Anthropic, Ollama per-agent
-- [x] **v3: Gap #3 ✅ Structured Output Validation** — Zod schemas at every handoff
-- [x] **v3: Gap #4 🛡️ Security Reviewer Agent** — OWASP Top 10 dedicated agent
-- [x] **v3: Gap #5 🐙 MCP GitHub Delivery** — Push generated files to GitHub
-- [x] **v3: Gap #6 ⚡ Parallel Execution** — Testing Agent runs concurrently
-- [x] **v3: Gap #7 📋 Full Audit Log** — Structured JSON event log with export
-- [x] **v3: Gap #8 🧠 Agent Memory** — Cross-session tech preference learning
-- [x] **v3: Gap #9 🌊 Token Streaming** — Developer agent streams code live
+<details>
+<summary><strong>v1 — Foundation (6-agent pipeline, streaming UI, workspace)</strong></summary>
 
----
+- 6-agent automated pipeline with live SSE UI
+- Developer ↔ Reviewer feedback loop (3 iterations)
+- Workspace file manager with ZIP export
+- Premium glassmorphism dark UI
+- Analytics dashboard (tokens, latency, cost)
+- Pipeline history with localStorage persistence
+- Individual agent test API
+- Retry with exponential backoff
 
-### 🔭 Future Vision
+</details>
 
-| Feature | Description |
-|---------|-------------|
-| 📝 **Custom YAML Flows** | Build on the `FlowDefinition` system for user-defined crews |
-| 🖼️ **Vision-to-Code** | Upload UI mockups/screenshots → generate matching frontend code |
-| 🌍 **Multi-Language Output** | Support Python, Go, Rust, Java — not just TypeScript/JavaScript |
-| 🏗️ **Project Templates** | Pre-built starters (Next.js, Express, FastAPI) to reduce token usage |
-| 🤝 **Collaborative Mode** | Multiple users working on the same pipeline in real-time |
-| 📚 **Expand RAG KB** | More frameworks, user-uploadable internal API docs |
-| 🔐 **Vault Integration** | Secrets management with HashiCorp Vault or AWS Secrets Manager |
+<details>
+<summary><strong>v2 — Intelligence Layer (routing, tools, RAG, flows, checkpoints)</strong></summary>
+
+- 🧭 Intelligent routing — 4-mode classifier
+- ⚙️ Agentic tools — searchWeb, lintCode, readFile
+- 📚 RAG knowledge base — TF-IDF over Next.js 15, React 19, TS 5 docs
+- 🔀 Flows DSL — typed pipeline definitions
+- 💾 Stateful checkpoints — resume from failure
+- 🧪 Testing Agent — auto-generates unit & integration tests
+
+</details>
+
+<details>
+<summary><strong>v3 — Enterprise Gaps (9 critical features)</strong></summary>
+
+- ⏸️ Human-in-the-Loop (HITL) modal approval gate
+- 🔑 Multi-Provider LLM (Groq + OpenAI + Anthropic + Ollama)
+- ✅ Structured Output Validation (Zod v4 schemas)
+- 🛡️ Security Reviewer Agent (OWASP Top 10)
+- 🐙 MCP GitHub Delivery
+- ⚡ Parallel Agent Execution
+- 📋 Full Audit Log Export (JSON)
+- 🧠 Agent Memory — cross-session learning
+- 🌊 Token Streaming — live code preview
+
+</details>
+
+<details>
+<summary><strong>Phase 1 — Enterprise Power (5 new features, current)</strong></summary>
+
+- 🌍 Multi-Language Pipeline (7 languages with auto-detection)
+- 🏗️ Technical Debt Scanner (A–F grade, 6 categories)
+- ⚖️ Compliance Agent (GDPR, HIPAA, PCI-DSS, SOC 2, DPDP, OWASP)
+- 🖼️ Vision-to-Code (image → component code with Llama 4 Maverick)
+- 💰 ROI Intelligence Dashboard (savings, ROI multiple, sprint impact)
+
+</details>
+
+### 🔭 Coming Next (Phase 2–3)
+
+| Feature | Phase | Impact |
+|---------|-------|--------|
+| 🏛️ Legacy Code Modernizer | Phase 2 | COBOL/Java 8 → modern stack |
+| 🗺️ Knowledge Graph Builder | Phase 2 | Semantic codebase map for onboarding |
+| 📋 Jira / Linear / Azure DevOps | Phase 2 | AI tasks → PM tickets automatically |
+| 👥 Collaborative Multi-User | Phase 2 | Real-time shared pipeline review |
+| 🧪 Synthetic Test Data | Phase 3 | GDPR-safe realistic test datasets |
+| 🤖 Autonomous CI/CD Agent | Phase 3 | Trigger → monitor → auto-fix build failures |
+| 🏪 Template Marketplace | Phase 3 | Community starters, 40% faster runs |
+| 📱 Mobile-Responsive UI | Phase 3 | Full mobile support |
 
 ---
 
 ## 🤝 Contributing
 
-Contributions are welcome! The project is actively growing.
+Contributions are what make this the best repo on GitHub. Every PR is reviewed with care.
 
-### How to Get Started
+### How to Contribute
 
-1. **Fork** the repository
-2. **Create** a feature branch: `git checkout -b feature/amazing-feature`
-3. **Commit** your changes: `git commit -m 'Add amazing feature'`
-4. **Push** to the branch: `git push origin feature/amazing-feature`
-5. **Open** a Pull Request
+```bash
+# 1. Fork the repository
+# 2. Create your feature branch
+git checkout -b feature/amazing-feature
+
+# 3. Make your changes
+# 4. Run TypeScript check
+npx tsc --noEmit --skipLibCheck
+
+# 5. Commit
+git commit -m 'feat: add amazing feature'
+
+# 6. Push
+git push origin feature/amazing-feature
+
+# 7. Open a Pull Request
+```
 
 ### Good First Issues
 
-| Task | Difficulty | Description |
-|------|:----------:|-------------|
-| 📝 Custom YAML Flows | Medium | Add a YAML parser on top of `src/lib/flows/types.ts` |
-| 🌐 Expand RAG Docs | Easy | Add more knowledge chunks to `src/lib/rag/knowledgeBase.ts` |
-| 📱 Mobile UI | Easy | Make the layout responsive for smaller screens |
-| 🔔 Email HITL Notifications | Medium | Send email when HITL approval is needed |
-| 🏗️ Project Templates | Medium | Add template injection into Developer agent prompt |
-| 🔍 Vector DB RAG | Hard | Replace TF-IDF with actual vector DB (pgvector, Chroma) |
+| Task | Difficulty | Where to Look |
+|------|:----------:|--------------|
+| Add more RAG knowledge chunks | 🟢 Easy | `src/lib/rag/knowledgeBase.ts` |
+| Add a new language skill | 🟢 Easy | `src/lib/skills/languages.ts` |
+| Add a Jira delivery target | 🟡 Medium | `src/app/api/deliver/route.ts` |
+| Add email HITL notifications | 🟡 Medium | `src/lib/hitl.ts` |
+| Build the Legacy Modernizer Agent | 🔴 Hard | `src/lib/agents/` |
+| Real vector DB (pgvector) for RAG | 🔴 Hard | `src/lib/rag/` |
 
-> 💡 **Tip:** The v3 architecture separates concerns cleanly — each feature is self-contained in its own module (`hitl.ts`, `audit.ts`, `memory.ts`, `providers/`, `validation/`). Adding a new delivery target takes ~50 lines in `api/deliver/route.ts`.
+> 💡 **Pro tip:** Each new feature is self-contained in its own module. Adding a new agent takes ~150 lines. Adding a new delivery target takes ~50 lines.
 
 ---
 
 ## 📄 License
 
-This project is licensed under the MIT License — see the [LICENSE](LICENSE) file for details.
+MIT License — see [LICENSE](LICENSE) for full details. Use it, fork it, ship it.
 
 ---
 
 <div align="center">
 
-### Built with ❤️ by [Parthiv Pandya](https://github.com/ParthivPandya)
+## ⭐ Star This Repository
 
-**Next.js** · **Vercel AI SDK** · **Groq** · **TypeScript** · **Zod** · **RAG** · **HITL** · **MCP** · **Streaming**
+**If this project gave you value, taught you something, or just impressed you — drop a star.**
+**It helps more developers discover the best open-source AI orchestrator on GitHub.**
+
+[![Star History Chart](https://api.star-history.com/svg?repos=ParthivPandya/multi-agent-orchestrator&type=Date)](https://star-history.com/#ParthivPandya/multi-agent-orchestrator&Date)
 
 ---
 
-<sub>If this project saved you time or taught you something, consider giving it a ⭐</sub>
+### Built with ❤️ and extraordinary ambition by [Parthiv Pandya](https://github.com/ParthivPandya)
+
+*Next.js · TypeScript · Groq · Vercel AI SDK · Zod · RAG · HITL · MCP · Streaming · Multi-Language · Vision · Compliance · ROI*
+
+[![GitHub](https://img.shields.io/badge/GitHub-ParthivPandya-181717?style=for-the-badge&logo=github)](https://github.com/ParthivPandya)
+[![Email](https://img.shields.io/badge/Email-parthiv.pandya%40yahoo.co.in-6D4AFF?style=for-the-badge&logo=yahoo)](mailto:parthiv.pandya@yahoo.co.in)
+
+---
 
 **[⬆ Back to Top](#-multi-agent-ai-orchestrator)**
+
+*v3.1 · March 2026 · 14 Enterprise Features · 8 Agents · 7 Languages · 100% Free*
 
 </div>
