@@ -45,7 +45,7 @@ export async function POST(request: NextRequest) {
                         hitlEnabled === true
                     );
 
-                    // Send final result with audit log export
+                    // Send final result with audit log export, debt report, and language
                     const finalEvent = `data: ${JSON.stringify({
                         type: 'final_result',
                         success: result.success,
@@ -53,6 +53,8 @@ export async function POST(request: NextRequest) {
                         checkpointId: result.checkpointId,
                         routeDecision: result.routeDecision,
                         auditLog: result.auditLog?.export(),
+                        debtReport: result.debtReport,
+                        detectedLanguage: result.detectedLanguage,
                         timestamp: new Date().toISOString(),
                     })}\n\n`;
                     controller.enqueue(encoder.encode(finalEvent));

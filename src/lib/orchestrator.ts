@@ -27,6 +27,7 @@ import { runCodeReviewer, isApproved } from '@/lib/agents/codeReviewer';
 import { runTestingAgent } from '@/lib/agents/testingAgent';
 import { runDeploymentAgent } from '@/lib/agents/deploymentAgent';
 import { runSecurityReviewer } from '@/lib/agents/securityReviewer';
+import { runTechnicalDebtScanner } from '@/lib/agents/debtScanner';
 import { classifyIntent } from '@/lib/agents/routerAgent';
 import { retrieveRelevantChunks, formatRAGContext } from '@/lib/rag/retriever';
 import { lintCode, formatLintResult } from '@/lib/tools/lintCode';
@@ -35,6 +36,7 @@ import { saveCheckpoint, loadCheckpoint } from '@/lib/workspace/checkpoint';
 import { BUILT_IN_FLOWS, FlowDefinition } from '@/lib/flows/types';
 import { createHITLRequest, waitForHumanDecision } from '@/lib/hitl';
 import { AuditLog, generateRunId } from '@/lib/audit';
+import { detectLanguage, getSkillPrompt } from '@/lib/skills/languages';
 import {
   validateHandoff,
 } from '@/lib/validation/handoff';
@@ -202,6 +204,8 @@ export async function runPipeline(
     checkpointId?: string;
     routeDecision?: RouteDecision;
     auditLog?: AuditLog;
+    debtReport?: unknown;
+    detectedLanguage?: string;
 }> {
     const context = new AgentContext();
     const results: Record<string, AgentResult> = {};
@@ -361,6 +365,17 @@ export async function runPipeline(
             await delay(INTER_AGENT_DELAY_MS);
         }
 
+        // ── Feature 5: Auto-detect language from requirement ───────────────────
+        const detectedLanguage = detectLanguage(requirementsOutput || requirement);
+        const languageSkillPrompt = getSkillPrompt(detectedLanguage);
+
+        emitEvent(onEvent, {
+            type: 'iteration_info',
+            stage: 'language_detection',
+            output: `🌐 Language detected: ${detectedLanguage} — skill injected into Developer agent`,
+            timestamp: new Date().toISOString(),
+        });
+
         // ── STAGE 3 & 4: Developer ↔ Reviewer Feedback Loop ───────────────────
         let codeResult: AgentResult | null = results['code'] || null;
         let reviewResult: AgentResult | null = results['review'] || null;
@@ -372,7 +387,7 @@ export async function runPipeline(
                 // ── Enhancement 2 & 3: Web search + RAG injected ──
                 let devSearchContext = '';
                 try {
-                    const searchResults = await searchWeb(`${requirement} code example best practices`, 2);
+                    const searchResults = await searchWeb(`${requirement} ${detectedLanguage} code example best practices`, 2);
                     if (searchResults.length > 0) {
                         devSearchContext = `\n\nWeb references:\n${formatWebResults(searchResults)}`;
                         emitEvent(onEvent, {
@@ -424,7 +439,8 @@ export async function runPipeline(
                         context,
                         reviewerFeedback,
                         ragContext + devSearchContext,
-                        developerChunkHandler
+                        developerChunkHandler,
+                        languageSkillPrompt  // Feature 5: language skill injection
                     ),
                     'developer',
                     'code',
@@ -773,7 +789,29 @@ export async function runPipeline(
             timestamp: new Date().toISOString(),
         });
 
-        return { success: true, results, context, checkpointId, routeDecision, auditLog };
+        // ── Feature 2: Non-blocking Technical Debt Scan ────────────────────────
+        let debtReport = undefined;
+        if (codeResult?.output) {
+            try {
+                const debtResult = await runTechnicalDebtScanner(
+                    codeResult.output,
+                    detectedLanguage
+                );
+                if (debtResult.status === 'complete') {
+                    debtReport = (debtResult as { debtReport?: unknown }).debtReport;
+                    emitEvent(onEvent, {
+                        type: 'iteration_info',
+                        stage: 'debt_scan',
+                        output: `🏗️ Technical Debt Scan complete — Grade: ${(debtReport as { grade?: string })?.grade ?? 'N/A'}, Score: ${(debtReport as { debtScore?: number })?.debtScore?.toFixed(1) ?? '?'}/10`,
+                        timestamp: new Date().toISOString(),
+                    });
+                    results['debt-scan'] = debtResult;
+                }
+            } catch { /* non-fatal — debt scan is always optional */ }
+        }
+
+        return { success: true, results, context, checkpointId, routeDecision, auditLog, debtReport, detectedLanguage };
+
 
     } catch (error) {
         const errMsg = error instanceof Error ? error.message : 'Pipeline failed unexpectedly';

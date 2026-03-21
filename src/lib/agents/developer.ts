@@ -2,6 +2,7 @@
 // Agent 3 — Developer Agent
 // Gap #9: Enhanced with streamText for token-by-token streaming
 // Gap #8: Memory context injected from analyst output
+// Feature 5: Language skill injection for multi-language support
 // ============================================================
 
 import { createGroq } from '@ai-sdk/groq';
@@ -16,6 +17,7 @@ const config = AGENT_CONFIGS['developer'];
  * Run the developer agent.
  * If an onChunk callback is provided, uses streamText for live token output.
  * Falls back to generateText if streaming fails.
+ * languageSkillPrompt: injected from Feature 5 language skill registry.
  */
 export async function runDeveloper(
     tasks: string,
@@ -23,7 +25,8 @@ export async function runDeveloper(
     context: AgentContext,
     reviewerFeedback?: string,
     ragAndSearchContext?: string,
-    onChunk?: (chunk: string) => void
+    onChunk?: (chunk: string) => void,
+    languageSkillPrompt?: string
 ): Promise<AgentResult> {
     const startTime = Date.now();
     try {
@@ -31,12 +34,17 @@ export async function runDeveloper(
         const iteration = context.getIterationCount('developer') + 1;
         const prompt = getDeveloperPrompt(tasks, requirements, reviewerFeedback, ragAndSearchContext);
 
+        // Feature 5: Append language-specific idioms to the system prompt
+        const systemPrompt = languageSkillPrompt
+            ? `${DEVELOPER_SYSTEM_PROMPT}\n\n${languageSkillPrompt}`
+            : DEVELOPER_SYSTEM_PROMPT;
+
         // Gap #9: Use streamText when a chunk callback is provided
         if (onChunk) {
             try {
                 const { textStream, usage } = await streamText({
                     model: groq(config.model),
-                    system: DEVELOPER_SYSTEM_PROMPT,
+                    system: systemPrompt,
                     prompt,
                     maxOutputTokens: config.maxTokens,
                     temperature: 0.5,
@@ -71,7 +79,7 @@ export async function runDeveloper(
         // Fallback: standard generateText (non-streaming)
         const { text, usage } = await generateText({
             model: groq(config.model),
-            system: DEVELOPER_SYSTEM_PROMPT,
+            system: systemPrompt,
             prompt,
             maxOutputTokens: config.maxTokens,
             temperature: 0.5,
