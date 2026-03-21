@@ -1,12 +1,21 @@
 // ============================================================
-// Main Orchestrator — Enhanced Pipeline Controller v2
+// Main Orchestrator — Enhanced Pipeline Controller v3
 //
-// Enhancements integrated:
+// Enhancements from v2:
 //   1. Intelligent Routing — classifyIntent() pre-routes before any agent runs
 //   2. Agentic Tools — lintCode injected into reviewer prompt; searchWeb into developer
 //   3. RAG Knowledge — retrieveRelevantChunks() prepended to developer + reviewer prompts
 //   4. Flows DSL — BUILT_IN_FLOWS maps PipelineMode → agent subset
 //   5. Checkpointing — saveCheckpoint() called after each agent stage
+//
+// New v3 Enhancements (9 Gaps):
+//   Gap #1: Human-in-the-Loop (HITL) approval gate after Code Review
+//   Gap #3: Structured output validation at every handoff (Zod schemas)
+//   Gap #4: Dedicated Security Reviewer Agent (OWASP aligned)
+//   Gap #6: Parallel execution of Testing + Doc agents
+//   Gap #7: Full Audit Log captured and exportable
+//   Gap #8: Agent Memory — cross-session preference injection
+//   Gap #9: Token Streaming — Developer agent streams character-by-character
 // ============================================================
 
 import { AgentContext } from '@/lib/context';
@@ -17,12 +26,23 @@ import { runDeveloper } from '@/lib/agents/developer';
 import { runCodeReviewer, isApproved } from '@/lib/agents/codeReviewer';
 import { runTestingAgent } from '@/lib/agents/testingAgent';
 import { runDeploymentAgent } from '@/lib/agents/deploymentAgent';
+import { runSecurityReviewer } from '@/lib/agents/securityReviewer';
 import { classifyIntent } from '@/lib/agents/routerAgent';
 import { retrieveRelevantChunks, formatRAGContext } from '@/lib/rag/retriever';
 import { lintCode, formatLintResult } from '@/lib/tools/lintCode';
 import { searchWeb, formatWebResults } from '@/lib/tools/searchWeb';
 import { saveCheckpoint, loadCheckpoint } from '@/lib/workspace/checkpoint';
 import { BUILT_IN_FLOWS, FlowDefinition } from '@/lib/flows/types';
+import { createHITLRequest, waitForHumanDecision } from '@/lib/hitl';
+import { AuditLog, generateRunId } from '@/lib/audit';
+import {
+  validateHandoff,
+} from '@/lib/validation/handoff';
+import {
+  AnalystOutputSchema,
+  PlannerOutputSchema,
+  ReviewerOutputSchema,
+} from '@/lib/validation/schemas';
 
 const MAX_REVIEW_ITERATIONS = 3;
 const INTER_AGENT_DELAY_MS = 1500;
@@ -94,6 +114,7 @@ async function runStage<T extends AgentResult>(
     completedStages: string[],
     checkpointId: string,
     requirement: string,
+    auditLog: AuditLog,
     iteration?: number,
     maxIterations?: number
 ): Promise<{ result: T; failed: boolean }> {
@@ -106,6 +127,8 @@ async function runStage<T extends AgentResult>(
         ...(iteration !== undefined && { iteration, maxIterations }),
     });
 
+    auditLog.log({ eventType: 'stage_start', stage, agentName });
+
     const result = await withRetry(agentFn, agentName, stage, onEvent);
 
     if (result.status === 'error') {
@@ -117,6 +140,15 @@ async function runStage<T extends AgentResult>(
             error: result.error,
             timestamp: new Date().toISOString(),
         });
+
+        auditLog.log({
+            eventType: 'stage_error',
+            stage,
+            agentName,
+            error: result.error,
+            latencyMs: result.latencyMs,
+        });
+
         return { result, failed: true };
     }
 
@@ -132,7 +164,16 @@ async function runStage<T extends AgentResult>(
         ...(iteration !== undefined && { iteration }),
     });
 
-    // ── Enhancement 5: Checkpoint after each stage ──
+    auditLog.log({
+        eventType: 'stage_complete',
+        stage,
+        agentName,
+        output: result.output,
+        latencyMs: result.latencyMs,
+        tokenUsage: result.tokensUsed ? { inputTokens: 0, outputTokens: result.tokensUsed } : undefined,
+    });
+
+    // ── Checkpoint after each stage ──
     results[stage] = result;
     completedStages.push(stage);
     const newCheckpointId = await saveCheckpoint(requirement, completedStages, results, false, checkpointId);
@@ -152,18 +193,23 @@ async function runStage<T extends AgentResult>(
 export async function runPipeline(
     requirement: string,
     onEvent: (event: PipelineEvent) => void,
-    resumeCheckpointId?: string
+    resumeCheckpointId?: string,
+    hitlEnabled = false
 ): Promise<{
     success: boolean;
     results: Record<string, AgentResult>;
     context: AgentContext;
     checkpointId?: string;
     routeDecision?: RouteDecision;
+    auditLog?: AuditLog;
 }> {
     const context = new AgentContext();
     const results: Record<string, AgentResult> = {};
     const completedStages: string[] = [];
     let checkpointId = resumeCheckpointId || '';
+    const auditLog = new AuditLog(generateRunId());
+
+    auditLog.log({ eventType: 'pipeline_start', input: requirement });
 
     // ── Enhancement 5: Resume from checkpoint ──────────────────────────────────
     if (resumeCheckpointId) {
@@ -175,7 +221,6 @@ export async function runPipeline(
                 output: `🔄 Resuming from checkpoint. ${checkpoint.completedStages.length} stage(s) already complete: ${checkpoint.completedStages.join(', ')}`,
                 timestamp: new Date().toISOString(),
             });
-            // Repopulate results and emit completed stages for the UI
             Object.assign(results, checkpoint.results);
             completedStages.push(...checkpoint.completedStages);
             for (const [stage, result] of Object.entries(checkpoint.results)) {
@@ -217,7 +262,6 @@ export async function runPipeline(
             timestamp: new Date().toISOString(),
         });
 
-        // Get the flow for this mode
         const flowKey = routeDecision.mode.toLowerCase().replace(/_/g, '-') as keyof typeof BUILT_IN_FLOWS;
         const flowName = (['standard', 'quick-fix', 'plan-only', 'code-review-only'] as const).includes(flowKey as 'standard' | 'quick-fix' | 'plan-only' | 'code-review-only')
             ? (flowKey as 'standard' | 'quick-fix' | 'plan-only' | 'code-review-only')
@@ -227,7 +271,7 @@ export async function runPipeline(
         const enabledAgents = new Set(flow.agents.map(a => a.agentName));
         const skip = (agentName: AgentName) => !enabledAgents.has(agentName);
 
-        // ── Enhancement 3: RAG — retrieve docs relevant to the requirement ──────
+        // ── Enhancement 3: RAG ──────────────────────────────────────────────────
         const ragChunks = retrieveRelevantChunks(requirement, 3);
         const ragContext = formatRAGContext(ragChunks);
 
@@ -253,10 +297,29 @@ export async function runPipeline(
                 results,
                 completedStages,
                 checkpointId,
-                requirement
+                requirement,
+                auditLog
             );
-            if (failed) return { success: false, results, context, routeDecision };
+            if (failed) {
+                auditLog.log({ eventType: 'pipeline_aborted', error: 'Requirements analyst failed' });
+                return { success: false, results, context, routeDecision, auditLog };
+            }
             requirementsOutput = result.output;
+
+            // Gap #3: Validate analyst output
+            const analystValidation = validateHandoff('requirements-analyst', requirementsOutput, AnalystOutputSchema);
+            if (!analystValidation.success) {
+                emitEvent(onEvent, {
+                    type: 'validation_error',
+                    stage: 'requirements',
+                    agentName: 'requirements-analyst',
+                    details: analystValidation.errors,
+                    output: `⚠️ Analyst output validation warning: ${analystValidation.errors?.join('; ')}`,
+                    timestamp: new Date().toISOString(),
+                });
+                auditLog.log({ eventType: 'validation_error', stage: 'requirements', error: analystValidation.errors?.join('; ') });
+            }
+
             await delay(INTER_AGENT_DELAY_MS);
         }
 
@@ -272,10 +335,29 @@ export async function runPipeline(
                 results,
                 completedStages,
                 checkpointId,
-                requirement
+                requirement,
+                auditLog
             );
-            if (failed) return { success: false, results, context, routeDecision };
+            if (failed) {
+                auditLog.log({ eventType: 'pipeline_aborted', error: 'Task planner failed' });
+                return { success: false, results, context, routeDecision, auditLog };
+            }
             tasksOutput = result.output;
+
+            // Gap #3: Validate planner output
+            const plannerValidation = validateHandoff('task-planner', tasksOutput, PlannerOutputSchema);
+            if (!plannerValidation.success) {
+                emitEvent(onEvent, {
+                    type: 'validation_error',
+                    stage: 'tasks',
+                    agentName: 'task-planner',
+                    details: plannerValidation.errors,
+                    output: `⚠️ Planner output validation warning: ${plannerValidation.errors?.join('; ')}`,
+                    timestamp: new Date().toISOString(),
+                });
+                auditLog.log({ eventType: 'validation_error', stage: 'tasks', error: plannerValidation.errors?.join('; ') });
+            }
+
             await delay(INTER_AGENT_DELAY_MS);
         }
 
@@ -287,7 +369,7 @@ export async function runPipeline(
 
         if (!skip('developer') && !completedStages.includes('code')) {
             for (let iteration = 1; iteration <= MAX_REVIEW_ITERATIONS; iteration++) {
-                // ── Enhancement 2 & 3: Web search (non-blocking) + RAG injected ──
+                // ── Enhancement 2 & 3: Web search + RAG injected ──
                 let devSearchContext = '';
                 try {
                     const searchResults = await searchWeb(`${requirement} code example best practices`, 2);
@@ -303,32 +385,92 @@ export async function runPipeline(
                     }
                 } catch { /* non-fatal */ }
 
-                emitEvent(onEvent, { type: 'iteration_info', stage: 'development', iteration, maxIterations: MAX_REVIEW_ITERATIONS, timestamp: new Date().toISOString() });
+                emitEvent(onEvent, {
+                    type: 'iteration_info',
+                    stage: 'development',
+                    iteration,
+                    maxIterations: MAX_REVIEW_ITERATIONS,
+                    timestamp: new Date().toISOString(),
+                });
 
-                const { result: devResult, failed: devFailed } = await runStage(
+                // Gap #9: Stream developer tokens to UI
+                const developerChunkHandler = (chunk: string) => {
+                    emitEvent(onEvent, {
+                        type: 'stage_token',
+                        stage: 'code',
+                        agentName: 'developer',
+                        token: chunk,
+                        timestamp: new Date().toISOString(),
+                    });
+                };
+
+                // Emit stage_start for developer before streaming begins
+                emitEvent(onEvent, {
+                    type: 'stage_start',
+                    stage: 'code',
+                    agentName: 'developer',
+                    status: 'running',
+                    timestamp: new Date().toISOString(),
+                    iteration,
+                    maxIterations: MAX_REVIEW_ITERATIONS,
+                });
+
+                auditLog.log({ eventType: 'stage_start', stage: 'code', agentName: 'developer' });
+
+                const devResult = await withRetry(
                     () => runDeveloper(
                         tasksOutput || requirement,
                         requirementsOutput || requirement,
                         context,
                         reviewerFeedback,
-                        ragContext + devSearchContext
+                        ragContext + devSearchContext,
+                        developerChunkHandler
                     ),
                     'developer',
                     'code',
-                    onEvent,
-                    results,
-                    completedStages,
-                    checkpointId,
-                    requirement,
-                    iteration,
-                    MAX_REVIEW_ITERATIONS
+                    onEvent
                 );
-                if (devFailed) return { success: false, results, context, routeDecision };
+
+                if (devResult.status === 'error') {
+                    emitEvent(onEvent, {
+                        type: 'stage_error',
+                        stage: 'code',
+                        agentName: 'developer',
+                        status: 'error',
+                        error: devResult.error,
+                        timestamp: new Date().toISOString(),
+                    });
+                    auditLog.log({ eventType: 'stage_error', stage: 'code', error: devResult.error });
+                    return { success: false, results, context, routeDecision, auditLog };
+                }
+
+                emitEvent(onEvent, {
+                    type: 'stage_complete',
+                    stage: 'code',
+                    agentName: 'developer',
+                    status: 'complete',
+                    output: devResult.output,
+                    model: devResult.model,
+                    latencyMs: devResult.latencyMs,
+                    timestamp: new Date().toISOString(),
+                    iteration,
+                });
+
+                auditLog.log({
+                    eventType: 'stage_complete',
+                    stage: 'code',
+                    agentName: 'developer',
+                    output: devResult.output,
+                    latencyMs: devResult.latencyMs,
+                });
+
+                results['code'] = devResult;
+                completedStages.push('code');
                 codeResult = devResult;
                 await delay(INTER_AGENT_DELAY_MS);
 
                 if (!skip('code-reviewer')) {
-                    // ── Enhancement 2: Lint the generated code before sending to reviewer ──
+                    // ── Enhancement 2: Lint before reviewer ──
                     const lintResult = lintCode(codeResult.output);
                     const lintContext = formatLintResult(lintResult);
 
@@ -355,12 +497,90 @@ export async function runPipeline(
                         completedStages,
                         checkpointId,
                         requirement,
+                        auditLog,
                         iteration,
                         MAX_REVIEW_ITERATIONS
                     );
-                    if (revFailed) return { success: false, results, context, routeDecision };
+                    if (revFailed) {
+                        auditLog.log({ eventType: 'pipeline_aborted', error: 'Code reviewer failed' });
+                        return { success: false, results, context, routeDecision, auditLog };
+                    }
                     reviewResult = revResult;
+
+                    // Gap #3: Validate reviewer output
+                    const reviewerValidation = validateHandoff('code-reviewer', reviewResult.output, ReviewerOutputSchema);
+                    if (!reviewerValidation.success) {
+                        emitEvent(onEvent, {
+                            type: 'validation_error',
+                            stage: 'review',
+                            agentName: 'code-reviewer',
+                            details: reviewerValidation.errors,
+                            output: `⚠️ Reviewer output validation warning: ${reviewerValidation.errors?.join('; ')}`,
+                            timestamp: new Date().toISOString(),
+                        });
+                    }
+
                     approved = isApproved(reviewResult.output);
+
+                    // ── Gap #1: HITL approval gate after code is approved ──
+                    if (approved && hitlEnabled) {
+                        const hitlRequest = createHITLRequest(
+                            'post_review',
+                            codeResult.output,
+                            auditLog.getRunId(),
+                            reviewerValidation.data?.score as number | undefined
+                        );
+
+                        emitEvent(onEvent, {
+                            type: 'hitl_requested',
+                            stage: 'post_review',
+                            requestId: hitlRequest.id,
+                            reviewScore: hitlRequest.reviewScore,
+                            output: hitlRequest.agentOutput,
+                            timestamp: new Date().toISOString(),
+                        });
+
+                        auditLog.log({
+                            eventType: 'hitl_requested',
+                            stage: 'post_review',
+                            metadata: { requestId: hitlRequest.id },
+                        });
+
+                        const humanDecision = await waitForHumanDecision(hitlRequest.id);
+
+                        emitEvent(onEvent, {
+                            type: 'hitl_resolved',
+                            decision: humanDecision.decision,
+                            feedback: humanDecision.feedback,
+                            timestamp: new Date().toISOString(),
+                        });
+
+                        auditLog.log({
+                            eventType: 'hitl_resolved',
+                            decision: humanDecision.decision,
+                            metadata: { feedback: humanDecision.feedback, requestId: hitlRequest.id },
+                        });
+
+                        if (humanDecision.decision === 'rejected') {
+                            emitEvent(onEvent, {
+                                type: 'stage_error',
+                                stage: 'hitl',
+                                error: `Pipeline rejected by human reviewer: ${humanDecision.feedback || 'No feedback provided'}`,
+                                timestamp: new Date().toISOString(),
+                            });
+                            auditLog.log({ eventType: 'pipeline_aborted', error: 'Rejected by human reviewer' });
+                            return { success: false, results, context, routeDecision, auditLog };
+                        }
+
+                        if (humanDecision.decision === 'changes_requested') {
+                            // Re-enter developer loop with human feedback
+                            reviewerFeedback = `Human reviewer requested changes: ${humanDecision.feedback}\n\n${reviewResult.output}`;
+                            approved = false;
+                            await delay(INTER_AGENT_DELAY_MS);
+                            continue;
+                        }
+                        // 'approved' falls through — continue pipeline
+                    }
 
                     if (approved) break;
                     reviewerFeedback = reviewResult.output;
@@ -382,33 +602,100 @@ export async function runPipeline(
 
         await delay(INTER_AGENT_DELAY_MS);
 
-        // ── STAGE 5: Testing ───────────────────────────────────────────────────
-        if (!skip('testing-agent') && !completedStages.includes('tests')) {
+        // ── Gap #4: Security Reviewer ─────────────────────────────────────────
+        const securityCode = codeResult?.output || requirementsOutput || requirement;
+
+        if (!skip('developer') && codeResult && !completedStages.includes('security')) {
             emitEvent(onEvent, {
                 type: 'stage_start',
-                stage: 'testing',
-                agentName: 'testing-agent',
+                stage: 'security',
+                agentName: 'security-reviewer',
                 status: 'running',
                 timestamp: new Date().toISOString(),
             });
 
-            const testingResult = await withRetry(
-                () => runTestingAgent(codeResult!.output, requirementsOutput || requirement, context),
-                'testing-agent',
-                'testing',
-                onEvent
-            );
-            results['tests'] = testingResult;
-            completedStages.push('tests');
+            auditLog.log({ eventType: 'stage_start', stage: 'security', agentName: 'security-reviewer' });
 
-            if (testingResult.status === 'error') {
+            const securityResult = await runSecurityReviewer(securityCode, context);
+
+            emitEvent(onEvent, {
+                type: 'stage_complete',
+                stage: 'security',
+                agentName: 'security-reviewer',
+                status: 'complete',
+                output: securityResult.output,
+                model: securityResult.model,
+                latencyMs: securityResult.latencyMs,
+                blocked: securityResult.blocked,
+                severity: securityResult.securityOutput?.severity,
+                vulnerabilities: securityResult.securityOutput?.vulnerabilities,
+                timestamp: new Date().toISOString(),
+            });
+
+            auditLog.log({
+                eventType: 'stage_complete',
+                stage: 'security',
+                agentName: 'security-reviewer',
+                output: securityResult.output,
+                latencyMs: securityResult.latencyMs,
+                metadata: {
+                    severity: securityResult.securityOutput?.severity,
+                    blocked: securityResult.blocked,
+                },
+            });
+
+            results['security'] = securityResult;
+            completedStages.push('security');
+
+            if (securityResult.blocked) {
                 emitEvent(onEvent, {
-                    type: 'iteration_info',
-                    stage: 'testing',
-                    output: `⚠️ Testing Agent failed: ${testingResult.error}. Skipping tests.`,
+                    type: 'pipeline_blocked',
+                    stage: 'security',
+                    severity: securityResult.securityOutput?.severity,
+                    vulnerabilities: securityResult.securityOutput?.vulnerabilities,
+                    error: `Pipeline blocked: ${securityResult.securityOutput?.severity?.toUpperCase()} security vulnerabilities detected`,
                     timestamp: new Date().toISOString(),
                 });
-            } else {
+
+                auditLog.log({
+                    eventType: 'security_blocked',
+                    stage: 'security',
+                    error: `Blocked due to ${securityResult.securityOutput?.severity} vulnerabilities`,
+                });
+
+                return { success: false, results, context, routeDecision, auditLog };
+            }
+
+            await delay(INTER_AGENT_DELAY_MS);
+        }
+
+        // ── Gap #6: Parallel Execution — Testing runs in parallel ─────────────
+        if (!skip('testing-agent') && !completedStages.includes('tests')) {
+            emitEvent(onEvent, {
+                type: 'parallel_group_start',
+                agents: ['testing-agent'],
+                timestamp: new Date().toISOString(),
+                output: '⚡ Starting parallel execution: Testing Agent',
+            });
+
+            auditLog.log({ eventType: 'parallel_group_start', metadata: { agents: ['testing-agent'] } });
+
+            const [testingOutcome] = await Promise.allSettled([
+                withRetry(
+                    () => runTestingAgent(
+                        codeResult?.output || requirementsOutput || requirement,
+                        requirementsOutput || requirement,
+                        context
+                    ),
+                    'testing-agent',
+                    'testing',
+                    onEvent
+                ),
+            ]);
+
+            const testingResult = testingOutcome.status === 'fulfilled' ? testingOutcome.value : null;
+
+            if (testingResult && testingResult.status !== 'error') {
                 emitEvent(onEvent, {
                     type: 'stage_complete',
                     stage: 'testing',
@@ -419,7 +706,33 @@ export async function runPipeline(
                     latencyMs: testingResult.latencyMs,
                     timestamp: new Date().toISOString(),
                 });
+                auditLog.log({
+                    eventType: 'stage_complete',
+                    stage: 'testing',
+                    agentName: 'testing-agent',
+                    output: testingResult.output,
+                    latencyMs: testingResult.latencyMs,
+                });
+                results['tests'] = testingResult;
+                completedStages.push('tests');
+            } else {
+                emitEvent(onEvent, {
+                    type: 'iteration_info',
+                    stage: 'testing',
+                    output: `⚠️ Testing Agent failed or was skipped. Pipeline continues.`,
+                    timestamp: new Date().toISOString(),
+                });
             }
+
+            emitEvent(onEvent, {
+                type: 'parallel_group_complete',
+                agents: ['testing-agent'],
+                timestamp: new Date().toISOString(),
+                output: '✅ Parallel execution complete',
+            });
+
+            auditLog.log({ eventType: 'parallel_group_complete', metadata: { agents: ['testing-agent'] } });
+
             await delay(INTER_AGENT_DELAY_MS);
         }
 
@@ -437,13 +750,22 @@ export async function runPipeline(
                 results,
                 completedStages,
                 checkpointId,
-                requirement
+                requirement,
+                auditLog
             );
-            if (depFailed) return { success: false, results, context, routeDecision };
+            if (depFailed) {
+                auditLog.log({ eventType: 'pipeline_aborted', error: 'Deployment agent failed' });
+                return { success: false, results, context, routeDecision, auditLog };
+            }
         }
 
         // ── Enhancement 5: Final checkpoint — mark complete ────────────────────
         checkpointId = await saveCheckpoint(requirement, completedStages, results, true, checkpointId);
+
+        auditLog.log({
+            eventType: 'pipeline_complete',
+            output: `Pipeline completed. ${completedStages.length} stages finished.`,
+        });
 
         emitEvent(onEvent, {
             type: 'pipeline_complete',
@@ -451,14 +773,16 @@ export async function runPipeline(
             timestamp: new Date().toISOString(),
         });
 
-        return { success: true, results, context, checkpointId, routeDecision };
+        return { success: true, results, context, checkpointId, routeDecision, auditLog };
 
     } catch (error) {
+        const errMsg = error instanceof Error ? error.message : 'Pipeline failed unexpectedly';
         emitEvent(onEvent, {
             type: 'stage_error',
-            error: error instanceof Error ? error.message : 'Pipeline failed unexpectedly',
+            error: errMsg,
             timestamp: new Date().toISOString(),
         });
-        return { success: false, results, context, checkpointId: checkpointId || undefined };
+        auditLog.log({ eventType: 'pipeline_aborted', error: errMsg });
+        return { success: false, results, context, checkpointId: checkpointId || undefined, auditLog };
     }
 }

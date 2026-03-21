@@ -11,9 +11,10 @@ interface PipelineViewProps {
     currentIteration: number;
     maxIterations: number;
     isRunning: boolean;
+    parallelGroup?: string[] | null;
 }
 
-// Router runs first, then the standard 6 pipeline agents
+// Router runs first, then the standard pipeline agents (now includes security-reviewer)
 const ROUTER_AGENT: AgentName = 'router-agent';
 
 const PIPELINE_ORDER: AgentName[] = [
@@ -21,9 +22,13 @@ const PIPELINE_ORDER: AgentName[] = [
     'task-planner',
     'developer',
     'code-reviewer',
+    'security-reviewer',
     'testing-agent',
     'deployment-agent',
 ];
+
+// Agents that run in parallel (Gap #6)
+const PARALLEL_AGENTS = new Set(['testing-agent']);
 
 export default function PipelineView({
     agentStatuses,
@@ -33,6 +38,7 @@ export default function PipelineView({
     currentIteration,
     maxIterations,
     isRunning,
+    parallelGroup,
 }: PipelineViewProps) {
     const getConnectorStatus = (index: number): string => {
         const currentAgent = PIPELINE_ORDER[index];
@@ -53,9 +59,10 @@ export default function PipelineView({
             agentStatuses['testing-agent'] === 'idle' && currentIteration > 1)
     );
 
+    const isWaitingHITL = agentStatuses['developer'] === 'waiting_hitl';
+
     const routerStatus = agentStatuses[ROUTER_AGENT] ?? 'idle';
     const routerResult = agentResults[ROUTER_AGENT] ?? null;
-    const routerConfig = AGENT_CONFIGS[ROUTER_AGENT];
 
     return (
         <div className="pipeline-section">
@@ -91,7 +98,26 @@ export default function PipelineView({
                 )}
             </div>
 
-            {/* Router Agent (Enhancement 1) — shown at top of pipeline */}
+            {/* HITL waiting banner */}
+            {isWaitingHITL && (
+                <div style={{
+                    margin: '8px 0',
+                    padding: '10px 14px',
+                    background: 'rgba(245,158,11,0.08)',
+                    border: '1px solid rgba(245,158,11,0.25)',
+                    borderRadius: '10px',
+                    fontSize: '12px',
+                    color: '#fbbf24',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '8px',
+                    fontWeight: 600,
+                }}>
+                    ⏸️ Pipeline paused — awaiting human review decision
+                </div>
+            )}
+
+            {/* Router Agent — shown at top of pipeline */}
             {(routerStatus !== 'idle') && (
                 <div>
                     <AgentCard
@@ -101,7 +127,6 @@ export default function PipelineView({
                         isSelected={selectedAgent === ROUTER_AGENT}
                         onClick={() => onSelectAgent(ROUTER_AGENT)}
                     />
-                    {/* Connector from router to first pipeline agent */}
                     <div className={`pipeline-connector ${routerStatus === 'complete' ? 'complete' : ''}`} />
                 </div>
             )}
@@ -109,9 +134,26 @@ export default function PipelineView({
             {PIPELINE_ORDER.map((agentName, index) => {
                 const status = agentStatuses[agentName];
                 const isSkipped = status === 'skipped';
+                const isParallel = parallelGroup?.includes(agentName) || (PARALLEL_AGENTS.has(agentName) && status === 'running');
 
                 return (
                     <div key={agentName} style={isSkipped ? { opacity: 0.35, filter: 'grayscale(0.7)' } : undefined}>
+                        {/* Gap #6: Parallel indicator */}
+                        {isParallel && (
+                            <div style={{
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: '6px',
+                                padding: '4px 12px',
+                                fontSize: '11px',
+                                fontWeight: 600,
+                                color: 'var(--accent-indigo)',
+                                marginBottom: '4px',
+                            }}>
+                                ⚡ Running in parallel
+                            </div>
+                        )}
+
                         <AgentCard
                             agentName={agentName}
                             status={status}

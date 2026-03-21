@@ -1,15 +1,21 @@
 'use client';
 
 import { useState, useRef, useCallback, useMemo, useEffect } from 'react';
-import { AgentName, AgentStatus, AgentResult, PipelineEvent, PipelineHistoryEntry, RouteDecision } from '@/lib/types';
+import {
+  AgentName, AgentStatus, AgentResult, PipelineEvent,
+  PipelineHistoryEntry, RouteDecision, HITLDecision
+} from '@/lib/types';
 import { parseGeneratedFiles, ParsedFile } from '@/lib/fileParser';
 import { saveToHistory } from '@/lib/history';
+import { loadMemory, updateMemory, extractPreferencesFromAnalystOutput } from '@/lib/memory';
 import RequirementInput from '@/components/RequirementInput';
 import PipelineView from '@/components/PipelineView';
 import OutputPanel from '@/components/OutputPanel';
 import WorkspaceViewer from '@/components/WorkspaceViewer';
 import AnalyticsPanel from '@/components/AnalyticsPanel';
 import HistoryPanel from '@/components/HistoryPanel';
+import HITLModal from '@/components/HITLModal';
+import SettingsPanel from '@/components/SettingsPanel';
 
 const INITIAL_STATUSES: Record<AgentName, AgentStatus> = {
   'router-agent': 'idle',
@@ -17,6 +23,7 @@ const INITIAL_STATUSES: Record<AgentName, AgentStatus> = {
   'task-planner': 'idle',
   'developer': 'idle',
   'code-reviewer': 'idle',
+  'security-reviewer': 'idle',
   'testing-agent': 'idle',
   'deployment-agent': 'idle',
 };
@@ -29,6 +36,7 @@ const STAGE_TO_AGENT: Record<string, AgentName> = {
   development: 'developer',
   code: 'developer',
   review: 'code-reviewer',
+  security: 'security-reviewer',
   testing: 'testing-agent',
   tests: 'testing-agent',
   deployment: 'deployment-agent',
@@ -40,6 +48,14 @@ const PIPELINE_MODE_LABELS: Record<string, { label: string; color: string; icon:
   PLAN_ONLY:        { label: 'Plan Only',           color: '#f59e0b', icon: '📋' },
   CODE_REVIEW_ONLY: { label: 'Code Review Only',   color: '#ec4899', icon: '🔎' },
 };
+
+// HITL state stored in component
+interface HITLState {
+  requestId: string;
+  stage: string;
+  agentOutput: string;
+  reviewScore?: number;
+}
 
 export default function Home() {
   const [isRunning, setIsRunning] = useState(false);
@@ -58,7 +74,40 @@ export default function Home() {
   const [routeDecision, setRouteDecision] = useState<RouteDecision | null>(null);
   const [activityFeed, setActivityFeed] = useState<string[]>([]);
   const [checkpointId, setCheckpointId] = useState<string | null>(null);
+
+  // Gap #1 — HITL state
+  const [hitlEnabled, setHitlEnabled] = useState(false);
+  const [showHITLModal, setShowHITLModal] = useState(false);
+  const [hitlRequest, setHitlRequest] = useState<HITLState | null>(null);
+
+  // Gap #7 — Audit log
+  const [auditLogJson, setAuditLogJson] = useState<string | null>(null);
+
+  // Gap #9 — Streaming token buffer for developer
+  const [streamingTokens, setStreamingTokens] = useState('');
+
+  // Gap #4 — Security state
+  const [securityBlocked, setSecurityBlocked] = useState(false);
+  const [securitySeverity, setSecuritySeverity] = useState<string | null>(null);
+
+  // Gap #6 — Parallel group indicator
+  const [parallelGroup, setParallelGroup] = useState<string[] | null>(null);
+
+  // Gap #8 — Memory badge
+  const [memoryRunCount, setMemoryRunCount] = useState(0);
+
+  // Gap #2 — Settings panel
+  const [showSettings, setShowSettings] = useState(false);
+
+  // GitHub push state (Gap #5)
+  const [isPushingToGitHub, setIsPushingToGitHub] = useState(false);
+  const [githubRepoUrl, setGithubRepoUrl] = useState<string | null>(null);
+
   const abortControllerRef = useRef<AbortController | null>(null);
+
+  useEffect(() => {
+    setMemoryRunCount(loadMemory().runCount);
+  }, []);
 
   // Clear retry info after a delay
   useEffect(() => {
@@ -80,6 +129,14 @@ export default function Home() {
     setRetryInfo(null);
     setRouteDecision(null);
     setActivityFeed([]);
+    setStreamingTokens('');
+    setSecurityBlocked(false);
+    setSecuritySeverity(null);
+    setParallelGroup(null);
+    setAuditLogJson(null);
+    setGithubRepoUrl(null);
+    setShowHITLModal(false);
+    setHitlRequest(null);
   }, []);
 
   const handleStop = useCallback(() => {
@@ -95,7 +152,7 @@ export default function Home() {
     const statusUpdates: Record<AgentName, AgentStatus> = { ...INITIAL_STATUSES };
     const resultUpdates: Record<string, AgentResult | null> = {};
 
-    Object.entries(entry.agentResults).forEach(([key, result]) => {
+    Object.entries(entry.agentResults).forEach(([, result]) => {
       if (result) {
         statusUpdates[result.agentName] = result.status;
         resultUpdates[result.agentName] = result;
@@ -109,6 +166,71 @@ export default function Home() {
     if (entry.success) setShowAnalytics(true);
   }, [resetPipeline]);
 
+  // Gap #1: HITL decision handler
+  const handleHITLDecision = useCallback((requestId: string, decision: HITLDecision, feedback: string) => {
+    console.log('[HITL] Decision submitted:', { requestId, decision, feedback });
+    setShowHITLModal(false);
+    setHitlRequest(null);
+    // The API call itself is done inside HITLModal — the orchestrator will receive the resolution
+    if (decision === 'rejected') {
+      setIsRunning(false);
+    }
+  }, []);
+
+  // Gap #5: Push to GitHub
+  const handlePushToGitHub = useCallback(async () => {
+    const githubToken = localStorage.getItem('mao_github_token');
+    const githubOwner = localStorage.getItem('mao_github_owner');
+
+    if (!githubToken || !githubOwner) {
+      alert('Please configure GitHub token and owner in Settings first.');
+      setShowSettings(true);
+      return;
+    }
+
+    if (allGeneratedFiles.length === 0) {
+      alert('No generated files to push.');
+      return;
+    }
+
+    setIsPushingToGitHub(true);
+    try {
+      const repoName = `${projectName}-${Date.now()}`.slice(0, 60);
+      const res = await fetch('/api/deliver', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          target: 'github',
+          config: { token: githubToken, owner: githubOwner, repoName },
+          files: allGeneratedFiles.map(f => ({ path: f.path, content: f.content })),
+        }),
+      });
+      const data = await res.json();
+      if (data.success) {
+        setGithubRepoUrl(data.repoUrl);
+      } else {
+        alert(`GitHub push failed: ${data.error}`);
+      }
+    } catch (err) {
+      alert(`GitHub push error: ${err instanceof Error ? err.message : 'Unknown error'}`);
+    } finally {
+      setIsPushingToGitHub(false);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // Gap #7: Download audit log
+  const handleDownloadAuditLog = useCallback(() => {
+    if (!auditLogJson) return;
+    const blob = new Blob([auditLogJson], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `audit-log-${Date.now()}.json`;
+    a.click();
+    URL.revokeObjectURL(url);
+  }, [auditLogJson]);
+
   const handleSubmit = useCallback(async (requirement: string, resumeFromCheckpointId?: string) => {
     if (!resumeFromCheckpointId) resetPipeline();
     setIsRunning(true);
@@ -117,12 +239,17 @@ export default function Home() {
     const controller = new AbortController();
     abortControllerRef.current = controller;
     const runResults: Record<string, AgentResult> = {};
+    let requirementsOutputForMemory = '';
 
     try {
       const response = await fetch('/api/orchestrate', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ requirement, resumeCheckpointId: resumeFromCheckpointId }),
+        body: JSON.stringify({
+          requirement,
+          resumeCheckpointId: resumeFromCheckpointId,
+          hitlEnabled,
+        }),
         signal: controller.signal,
       });
 
@@ -159,6 +286,16 @@ export default function Home() {
                   setAgentStatuses(prev => ({ ...prev, [agentName]: 'running' }));
                   setSelectedAgent(agentName);
                 }
+                // Reset streaming buffer when developer starts
+                if (agentName === 'developer') setStreamingTokens('');
+                break;
+              }
+
+              case 'stage_token': {
+                // Gap #9: accumulate streaming tokens
+                if (event.stage === 'code' && event.token) {
+                  setStreamingTokens(prev => prev + event.token);
+                }
                 break;
               }
 
@@ -180,6 +317,12 @@ export default function Home() {
                   if (result.tokensUsed) {
                     setTotalTokens(prev => prev + (result.tokensUsed || 0));
                   }
+                  // Capture requirements output for memory update
+                  if (agentName === 'requirements-analyst') {
+                    requirementsOutputForMemory = event.output!;
+                  }
+                  // Clear streaming buffer when developer finishes
+                  if (agentName === 'developer') setStreamingTokens('');
                 }
                 break;
               }
@@ -209,9 +352,8 @@ export default function Home() {
               }
 
               case 'iteration_info': {
-                if (event.iteration) {
-                  setCurrentIteration(event.iteration);
-                }
+                if (event.iteration) setCurrentIteration(event.iteration);
+                if (event.output) setActivityFeed(prev => [event.output!, ...prev].slice(0, 20));
                 break;
               }
 
@@ -219,7 +361,6 @@ export default function Home() {
                 if (event.routeDecision) {
                   setRouteDecision(event.routeDecision);
                   setAgentStatuses(prev => ({ ...prev, 'router-agent': 'complete' }));
-                  // Mark skipped agents
                   const skipped = event.routeDecision.skippedAgents;
                   if (skipped.length > 0) {
                     setAgentStatuses(prev => {
@@ -234,15 +375,54 @@ export default function Home() {
 
               case 'tool_call':
               case 'tool_result':
-              case 'rag_retrieval': {
-                if (event.output) {
-                  setActivityFeed(prev => [event.output!, ...prev].slice(0, 20));
-                }
+              case 'rag_retrieval':
+              case 'validation_error': {
+                if (event.output) setActivityFeed(prev => [event.output!, ...prev].slice(0, 20));
                 break;
               }
 
               case 'checkpoint_saved': {
                 if (event.checkpointId) setCheckpointId(event.checkpointId);
+                break;
+              }
+
+              // Gap #1: HITL events
+              case 'hitl_requested': {
+                setHitlRequest({
+                  requestId: event.requestId!,
+                  stage: event.stage || 'post_review',
+                  agentOutput: event.output || '',
+                  reviewScore: event.reviewScore,
+                });
+                setShowHITLModal(true);
+                setAgentStatuses(prev => ({ ...prev, 'developer': 'waiting_hitl' }));
+                break;
+              }
+
+              case 'hitl_resolved': {
+                setShowHITLModal(false);
+                setHitlRequest(null);
+                break;
+              }
+
+              // Gap #4: Security blocked
+              case 'pipeline_blocked': {
+                setSecurityBlocked(true);
+                setSecuritySeverity(event.severity || null);
+                if (event.error) setActivityFeed(prev => [`🔴 ${event.error}`, ...prev].slice(0, 20));
+                break;
+              }
+
+              // Gap #6: Parallel group events
+              case 'parallel_group_start': {
+                setParallelGroup(event.agents || null);
+                if (event.output) setActivityFeed(prev => [event.output!, ...prev].slice(0, 20));
+                break;
+              }
+
+              case 'parallel_group_complete': {
+                setParallelGroup(null);
+                if (event.output) setActivityFeed(prev => [event.output!, ...prev].slice(0, 20));
                 break;
               }
 
@@ -259,6 +439,7 @@ export default function Home() {
                     tasks: 'task-planner',
                     code: 'developer',
                     review: 'code-reviewer',
+                    security: 'security-reviewer',
                     tests: 'testing-agent',
                     deployment: 'deployment-agent',
                   };
@@ -282,6 +463,10 @@ export default function Home() {
                 if ((event as PipelineEvent & { routeDecision?: RouteDecision }).routeDecision) {
                   setRouteDecision((event as PipelineEvent & { routeDecision?: RouteDecision }).routeDecision!);
                 }
+                // Gap #7: Store audit log
+                if ((event as PipelineEvent & { auditLog?: string }).auditLog) {
+                  setAuditLogJson((event as PipelineEvent & { auditLog?: string }).auditLog!);
+                }
                 setPipelineComplete(true);
                 setShowAnalytics(true);
                 break;
@@ -300,12 +485,22 @@ export default function Home() {
       }
     } finally {
       setIsRunning(false);
+      // Gap #8: Update memory after pipeline run
+      if (requirementsOutputForMemory && Object.keys(runResults).length > 0) {
+        const memoryUpdates = extractPreferencesFromAnalystOutput(
+          requirementsOutputForMemory,
+          currentRequirement || requirement
+        );
+        updateMemory(memoryUpdates);
+        setMemoryRunCount(prev => prev + 1);
+      }
       // Persist the run to history
       if (Object.keys(runResults).length > 0) {
         saveToHistory(requirement, currentRequirement || 'generated-project', runResults, pipelineComplete);
       }
     }
-  }, [resetPipeline, currentRequirement, pipelineComplete]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [resetPipeline, currentRequirement, pipelineComplete, hitlEnabled]);
 
   // Parse generated files from developer output
   const parsedFiles: ParsedFile[] = useMemo(() => {
@@ -314,14 +509,12 @@ export default function Home() {
     return parseGeneratedFiles(devResult.output);
   }, [agentResults]);
 
-  // Parse test files from testing agent output
   const testFiles: ParsedFile[] = useMemo(() => {
     const testResult = agentResults['testing-agent'];
     if (!testResult?.output) return [];
     return parseGeneratedFiles(testResult.output);
   }, [agentResults]);
 
-  // Parse deployment files
   const deploymentFiles: ParsedFile[] = useMemo(() => {
     const deployResult = agentResults['deployment-agent'];
     if (!deployResult?.output) return [];
@@ -363,9 +556,7 @@ export default function Home() {
         }),
       });
       const data = await response.json();
-      if (data.success) {
-        setSavedWorkspacePath(data.projectPath);
-      }
+      if (data.success) setSavedWorkspacePath(data.projectPath);
     } catch (error) {
       console.error('Failed to save workspace:', error);
     } finally {
@@ -374,7 +565,7 @@ export default function Home() {
   }, [allGeneratedFiles, projectName]);
 
   const completedCount = Object.values(agentStatuses).filter(s => s === 'complete').length;
-  const totalAgents = 7; // Router + 6 pipeline agents
+  const totalAgents = 8; // Router + 7 pipeline agents (now includes security-reviewer)
 
   return (
     <div className="app-container">
@@ -383,16 +574,89 @@ export default function Home() {
       <div className="bg-orb bg-orb-2" />
       <div className="bg-orb bg-orb-3" />
 
+      {/* Gap #1: HITL Modal */}
+      {showHITLModal && hitlRequest && (
+        <HITLModal
+          requestId={hitlRequest.requestId}
+          stage={hitlRequest.stage}
+          agentOutput={hitlRequest.agentOutput}
+          reviewScore={hitlRequest.reviewScore}
+          onDecision={handleHITLDecision}
+        />
+      )}
+
+      {/* Gap #2: Settings Panel */}
+      <SettingsPanel
+        isOpen={showSettings}
+        onClose={() => setShowSettings(false)}
+        hitlEnabled={hitlEnabled}
+        onHITLToggle={setHitlEnabled}
+      />
+
       {/* Header */}
       <header className="app-header">
         <div className="header-content">
           <div className="logo-section">
             <div className="logo-icon">🤖</div>
             <span className="logo-text">Multi-Agent Orchestrator</span>
-            <span className="logo-badge">v2 · 7 Agents</span>
+            <span className="logo-badge">v3 · 8 Agents · 9 Enhancements</span>
           </div>
 
-          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+            {/* Gap #8: Memory badge */}
+            {memoryRunCount > 0 && (
+              <div style={{
+                padding: '4px 10px',
+                borderRadius: '20px',
+                fontSize: '11px',
+                fontWeight: 600,
+                background: 'rgba(139,92,246,0.12)',
+                color: '#a78bfa',
+                border: '1px solid rgba(139,92,246,0.2)',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '5px',
+              }}>
+                🧠 Session #{memoryRunCount} — Memory Active
+              </div>
+            )}
+
+            {/* Gap #1: HITL badge */}
+            {hitlEnabled && (
+              <div style={{
+                padding: '4px 10px',
+                borderRadius: '20px',
+                fontSize: '11px',
+                fontWeight: 600,
+                background: 'rgba(245,158,11,0.12)',
+                color: '#fbbf24',
+                border: '1px solid rgba(245,158,11,0.2)',
+              }}>
+                ⏸️ HITL Active
+              </div>
+            )}
+
+            {/* Gap #2: Settings button */}
+            <button
+              onClick={() => setShowSettings(true)}
+              style={{
+                padding: '6px 12px',
+                borderRadius: '8px',
+                border: '1px solid rgba(255,255,255,0.1)',
+                background: 'rgba(255,255,255,0.05)',
+                color: 'var(--text-muted)',
+                fontSize: '12px',
+                cursor: 'pointer',
+                fontFamily: 'var(--font-sans)',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '5px',
+                transition: 'all 0.15s',
+              }}
+            >
+              ⚙️ Settings
+            </button>
+
             <HistoryPanel onRestore={handleRestoreHistory} />
 
             <div className="header-status">
@@ -421,7 +685,24 @@ export default function Home() {
         </div>
       )}
 
-      {/* Route Decision Banner (Enhancement 1) */}
+      {/* Gap #4: Security Blocked Banner */}
+      {securityBlocked && securitySeverity && (
+        <div style={{
+          padding: '10px 32px',
+          background: 'rgba(239,68,68,0.08)',
+          borderBottom: '1px solid rgba(239,68,68,0.2)',
+          fontSize: '13px',
+          color: '#f87171',
+          display: 'flex',
+          alignItems: 'center',
+          gap: '10px',
+          fontWeight: 600,
+        }}>
+          🔴 Pipeline blocked by Security Reviewer — <strong>{securitySeverity.toUpperCase()}</strong> severity vulnerabilities detected. Review the Security output for details.
+        </div>
+      )}
+
+      {/* Route Decision Banner */}
       {routeDecision && (
         <div style={{
           padding: '8px 32px',
@@ -459,7 +740,6 @@ export default function Home() {
 
       {/* Main Content */}
       <main className="main-content">
-        {/* Input Section */}
         <RequirementInput
           onSubmit={handleSubmit}
           isRunning={isRunning}
@@ -467,7 +747,7 @@ export default function Home() {
           initialValue={currentRequirement}
         />
 
-        {/* Stats Bar (shown when pipeline is running or complete) */}
+        {/* Stats Bar */}
         {(isRunning || pipelineComplete) && (
           <div className="stats-bar animate-fade-in">
             <div className="stat-item">
@@ -482,17 +762,19 @@ export default function Home() {
                 <polyline points="12 6 12 12 16 14" />
               </svg>
               Status: <span className="stat-value" style={{
-                color: pipelineComplete ? 'var(--accent-emerald)' : isRunning ? 'var(--accent-indigo)' : 'var(--text-primary)',
+                color: securityBlocked
+                  ? '#f87171'
+                  : pipelineComplete
+                    ? 'var(--accent-emerald)'
+                    : isRunning
+                      ? 'var(--accent-indigo)'
+                      : 'var(--text-primary)',
               }}>
-                {pipelineComplete ? '✅ Complete' : isRunning ? '⚡ Running' : 'Ready'}
+                {securityBlocked ? '🔴 Blocked' : pipelineComplete ? '✅ Complete' : isRunning ? '⚡ Running' : 'Ready'}
               </span>
             </div>
             {currentIteration > 0 && (
               <div className="stat-item">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                  <polyline points="23 4 23 10 17 10" />
-                  <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10" />
-                </svg>
                 Review Iteration: <span className="stat-value">{currentIteration}/{maxIterations}</span>
               </div>
             )}
@@ -501,23 +783,48 @@ export default function Home() {
                 Tokens Used: <span className="stat-value">{totalTokens.toLocaleString()}</span>
               </div>
             )}
+            {/* Gap #6: Parallel indicator */}
+            {parallelGroup && parallelGroup.length > 0 && (
+              <div className="stat-item" style={{ color: 'var(--accent-indigo)' }}>
+                ⚡ Parallel: {parallelGroup.join(' + ')}
+              </div>
+            )}
             {pipelineComplete && (
-              <button
-                onClick={() => setShowAnalytics(prev => !prev)}
-                style={{
-                  marginLeft: 'auto',
-                  padding: '3px 10px',
-                  background: showAnalytics ? 'rgba(99,102,241,0.15)' : 'var(--bg-glass)',
-                  border: `1px solid ${showAnalytics ? 'rgba(99,102,241,0.3)' : 'var(--border-primary)'}`,
-                  borderRadius: '6px',
-                  fontSize: '12px',
-                  color: showAnalytics ? 'var(--accent-indigo)' : 'var(--text-muted)',
-                  cursor: 'pointer',
-                  fontFamily: 'var(--font-sans)',
-                }}
-              >
-                📊 {showAnalytics ? 'Hide' : 'Show'} Analytics
-              </button>
+              <div style={{ marginLeft: 'auto', display: 'flex', gap: '8px' }}>
+                {/* Gap #7: Audit log export */}
+                {auditLogJson && (
+                  <button
+                    onClick={handleDownloadAuditLog}
+                    style={{
+                      padding: '3px 10px',
+                      background: 'rgba(99,102,241,0.1)',
+                      border: '1px solid rgba(99,102,241,0.25)',
+                      borderRadius: '6px',
+                      fontSize: '12px',
+                      color: '#818cf8',
+                      cursor: 'pointer',
+                      fontFamily: 'var(--font-sans)',
+                    }}
+                  >
+                    📋 Export Audit Log
+                  </button>
+                )}
+                <button
+                  onClick={() => setShowAnalytics(prev => !prev)}
+                  style={{
+                    padding: '3px 10px',
+                    background: showAnalytics ? 'rgba(99,102,241,0.15)' : 'var(--bg-glass)',
+                    border: `1px solid ${showAnalytics ? 'rgba(99,102,241,0.3)' : 'var(--border-primary)'}`,
+                    borderRadius: '6px',
+                    fontSize: '12px',
+                    color: showAnalytics ? 'var(--accent-indigo)' : 'var(--text-muted)',
+                    cursor: 'pointer',
+                    fontFamily: 'var(--font-sans)',
+                  }}
+                >
+                  📊 {showAnalytics ? 'Hide' : 'Show'} Analytics
+                </button>
+              </div>
             )}
           </div>
         )}
@@ -527,7 +834,7 @@ export default function Home() {
           <AnalyticsPanel agentResults={agentResults} />
         )}
 
-        {/* Activity Feed — tool calls, RAG, checkpoints (Enhancement 2,3,5) */}
+        {/* Activity Feed */}
         {activityFeed.length > 0 && (
           <div style={{
             background: 'rgba(0,0,0,0.25)',
@@ -549,6 +856,35 @@ export default function Home() {
           </div>
         )}
 
+        {/* Gap #9: Token streaming preview */}
+        {isRunning && streamingTokens && agentStatuses['developer'] === 'running' && (
+          <div style={{
+            background: 'rgba(6,182,212,0.04)',
+            border: '1px solid rgba(6,182,212,0.15)',
+            borderRadius: '10px',
+            padding: '14px 16px',
+            marginBottom: '8px',
+          }}>
+            <div style={{ fontSize: '11px', fontWeight: 600, color: '#22d3ee', marginBottom: '8px', letterSpacing: '0.06em', textTransform: 'uppercase' }}>
+              💻 Developer — Live Code Stream
+            </div>
+            <pre style={{
+              margin: 0,
+              fontSize: '11px',
+              lineHeight: '1.6',
+              color: 'var(--text-secondary)',
+              fontFamily: 'var(--font-mono)',
+              whiteSpace: 'pre-wrap',
+              wordBreak: 'break-word',
+              maxHeight: '200px',
+              overflowY: 'auto',
+            }}>
+              {streamingTokens.slice(-1200)}
+              <span style={{ display: 'inline-block', animation: 'blink 1s step-start infinite', color: '#22d3ee' }}>▋</span>
+            </pre>
+          </div>
+        )}
+
         {/* Two-column layout for pipeline + output */}
         <div style={{
           display: 'grid',
@@ -556,7 +892,6 @@ export default function Home() {
           gap: '24px',
           alignItems: 'start',
         }}>
-          {/* Pipeline View */}
           {(isRunning || pipelineComplete) && (
             <PipelineView
               agentStatuses={agentStatuses}
@@ -566,10 +901,10 @@ export default function Home() {
               currentIteration={currentIteration}
               maxIterations={maxIterations}
               isRunning={isRunning}
+              parallelGroup={parallelGroup}
             />
           )}
 
-          {/* Output Panel */}
           {(isRunning || pipelineComplete) && (
             <OutputPanel
               selectedAgent={selectedAgent}
@@ -578,7 +913,7 @@ export default function Home() {
           )}
         </div>
 
-        {/* Generated Project Files — File Tree + Code Viewer */}
+        {/* Generated Project Files */}
         {pipelineComplete && allGeneratedFiles.length > 0 && (
           <>
             <div className="section-divider">
@@ -597,6 +932,57 @@ export default function Home() {
                 </span>
               )}
             </div>
+
+            {/* Gap #5: GitHub push button */}
+            {githubRepoUrl ? (
+              <div style={{
+                marginBottom: '16px',
+                padding: '12px 16px',
+                background: 'rgba(16,185,129,0.06)',
+                border: '1px solid rgba(16,185,129,0.2)',
+                borderRadius: '10px',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '12px',
+              }}>
+                <span style={{ fontSize: '20px' }}>🐙</span>
+                <div>
+                  <div style={{ fontSize: '13px', fontWeight: 600, color: '#34d399' }}>Pushed to GitHub!</div>
+                  <a
+                    href={githubRepoUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    style={{ fontSize: '12px', color: '#6ee7b7', textDecoration: 'underline' }}
+                  >
+                    {githubRepoUrl}
+                  </a>
+                </div>
+              </div>
+            ) : (
+              <div style={{ marginBottom: '16px', display: 'flex', gap: '10px' }}>
+                <button
+                  onClick={handlePushToGitHub}
+                  disabled={isPushingToGitHub}
+                  style={{
+                    padding: '8px 18px',
+                    borderRadius: '9px',
+                    border: '1px solid rgba(139,92,246,0.3)',
+                    background: 'rgba(139,92,246,0.1)',
+                    color: '#a78bfa',
+                    fontSize: '13px',
+                    fontWeight: 600,
+                    cursor: isPushingToGitHub ? 'wait' : 'pointer',
+                    fontFamily: 'var(--font-sans)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '8px',
+                  }}
+                >
+                  {isPushingToGitHub ? '⏳ Pushing...' : '🐙 Push to GitHub'}
+                </button>
+              </div>
+            )}
+
             <WorkspaceViewer
               files={allGeneratedFiles}
               projectName={projectName}
@@ -617,8 +1003,17 @@ export default function Home() {
         color: 'var(--text-muted)',
         background: 'rgba(10, 10, 15, 0.5)',
       }}>
-        Built with Next.js · Vercel AI SDK · Groq API — Router + 6-Agent Pipeline · Intelligent Routing · RAG · Agentic Tools · Checkpoints
+        Multi-Agent Orchestrator v3 · 9 Enterprise Enhancements · Next.js · Vercel AI SDK · Groq
+        · HITL · Multi-Provider · Schema Validation · Security Review · MCP GitHub · Parallel Exec
+        · Audit Log · Agent Memory · Token Streaming
       </footer>
+
+      <style>{`
+        @keyframes blink {
+          0%, 100% { opacity: 1; }
+          50% { opacity: 0; }
+        }
+      `}</style>
     </div>
   );
 }

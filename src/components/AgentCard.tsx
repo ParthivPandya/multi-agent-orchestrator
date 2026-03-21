@@ -18,6 +18,7 @@ const STATUS_LABELS: Record<AgentStatus, string> = {
     complete: 'Complete',
     error: 'Failed',
     skipped: 'Skipped',
+    waiting_hitl: 'Awaiting Review',
 };
 
 const STATUS_ICONS: Record<AgentStatus, string> = {
@@ -26,6 +27,7 @@ const STATUS_ICONS: Record<AgentStatus, string> = {
     complete: '✅',
     error: '❌',
     skipped: '⏭',
+    waiting_hitl: '⏸️',
 };
 
 export default function AgentCard({

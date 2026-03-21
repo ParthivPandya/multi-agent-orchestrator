@@ -2,13 +2,14 @@
 // Multi-Agent Orchestration System — Shared Type Definitions
 // ============================================================
 
-export type AgentStatus = 'idle' | 'running' | 'complete' | 'error' | 'skipped';
+export type AgentStatus = 'idle' | 'running' | 'complete' | 'error' | 'skipped' | 'waiting_hitl';
 
 export type AgentName =
   | 'requirements-analyst'
   | 'task-planner'
   | 'developer'
   | 'code-reviewer'
+  | 'security-reviewer'
   | 'testing-agent'
   | 'deployment-agent'
   | 'router-agent';
@@ -31,6 +32,7 @@ export interface PipelineState {
   tasks: AgentResult | null;
   code: AgentResult | null;
   review: AgentResult | null;
+  security: AgentResult | null;
   tests: AgentResult | null;
   deployment: AgentResult | null;
   currentAgent: AgentName | null;
@@ -152,22 +154,85 @@ export interface PipelineCheckpoint {
   workspacePath?: string;
 }
 
+// ─── Gap #1: HITL Types ────────────────────────────────────────────────────────
+
+export type HITLDecision = 'approved' | 'rejected' | 'changes_requested';
+
+export interface HITLRequest {
+  id: string;
+  pipelineRunId: string;
+  stage: 'post_review' | 'pre_deployment' | 'post_security';
+  agentOutput: string;
+  reviewScore?: number;
+  requestedAt: number;
+}
+
+export interface HITLResponse {
+  requestId: string;
+  decision: HITLDecision;
+  feedback?: string;
+  reviewerNote?: string;
+  decidedAt: number;
+}
+
+// ─── Gap #7: Audit Log Types ────────────────────────────────────────────────────
+
+export interface AuditEvent {
+  eventId: string;
+  pipelineRunId: string;
+  timestamp: number;
+  eventType:
+    | 'pipeline_start' | 'pipeline_complete' | 'pipeline_aborted'
+    | 'stage_start' | 'stage_complete' | 'stage_error'
+    | 'retry_attempt' | 'iteration_info'
+    | 'hitl_requested' | 'hitl_resolved'
+    | 'security_blocked' | 'delivery_action'
+    | 'validation_error' | 'parallel_group_start' | 'parallel_group_complete';
+  stage?: string;
+  agentName?: string;
+  input?: string;
+  output?: string;
+  tokenUsage?: { inputTokens: number; outputTokens: number };
+  latencyMs?: number;
+  retryAttempt?: number;
+  decision?: string;
+  error?: string;
+  metadata?: Record<string, unknown>;
+}
+
+// ─── Gap #2: Multi-Provider LLM Types ─────────────────────────────────────────
+
+export type ProviderName = 'groq' | 'openai' | 'anthropic' | 'ollama';
+
+export interface AgentModelConfig {
+  provider: ProviderName;
+  model: string;
+}
+
 // Pipeline event for streaming updates to the frontend
 export interface PipelineEvent {
   type:
   | 'stage_start'
   | 'stage_complete'
   | 'stage_error'
+  | 'stage_token'
   | 'pipeline_complete'
+  | 'pipeline_blocked'
   | 'iteration_info'
   | 'final_result'
   | 'retry_attempt'
   | 'pipeline_paused'
-  | 'route_decision'    // NEW: router classified the intent
-  | 'tool_call'         // NEW: an agent is calling a tool
-  | 'tool_result'       // NEW: tool returned a result
-  | 'rag_retrieval'     // NEW: RAG retrieved relevant docs
-  | 'checkpoint_saved'; // NEW: pipeline state saved to disk
+  | 'route_decision'
+  | 'tool_call'
+  | 'tool_result'
+  | 'rag_retrieval'
+  | 'checkpoint_saved'
+  | 'hitl_requested'
+  | 'hitl_resolved'
+  | 'parallel_group_start'
+  | 'parallel_group_complete'
+  | 'validation_error'
+  | 'memory_loaded';
   stage?: string;
   agentName?: AgentName;
   status?: AgentStatus;
@@ -191,13 +256,32 @@ export interface PipelineEvent {
   ragChunks?: RAGChunk[];
   // Checkpoint-specific
   checkpointId?: string;
+  // HITL-specific
+  requestId?: string;
+  decision?: HITLDecision;
+  feedback?: string;
+  reviewScore?: number;
+  // Parallel-specific
+  agents?: string[];
+  // Token streaming
+  token?: string;
+  // Security-specific
+  severity?: string;
+  vulnerabilities?: unknown[];
+  blocked?: boolean;
+  // Validation-specific
+  details?: string[];
+  // Memory-specific
+  memoryContext?: string;
+  runCount?: number;
 }
 
 // API Request/Response types
 export interface OrchestrateRequest {
   requirement: string;
-  resumeCheckpointId?: string; // Enhancement 5: resume from saved checkpoint
-  flowName?: string;           // Enhancement 4: run a named custom flow
+  resumeCheckpointId?: string;
+  flowName?: string;
+  hitlEnabled?: boolean;
 }
 
 export interface AgentTestRequest {
@@ -227,8 +311,8 @@ export interface PipelineHistoryEntry {
   totalLatencyMs: number;
   agentResults: Record<string, AgentResult>;
   projectName: string;
-  checkpointId?: string; // Enhancement 5: link to resumable checkpoint
-  pipelineMode?: PipelineMode; // Enhancement 1: which mode was used
+  checkpointId?: string;
+  pipelineMode?: PipelineMode;
 }
 
 // Analytics per pipeline run
@@ -289,6 +373,15 @@ export const AGENT_CONFIGS: Record<AgentName, AgentConfig> = {
     icon: '🔎',
     color: '#f59e0b',
     maxTokens: 2048,
+  },
+  'security-reviewer': {
+    name: 'security-reviewer',
+    displayName: 'Security Reviewer',
+    description: 'Scans generated code for OWASP Top 10 vulnerabilities',
+    model: 'llama-3.3-70b-versatile',
+    icon: '🛡️',
+    color: '#ef4444',
+    maxTokens: 3072,
   },
   'testing-agent': {
     name: 'testing-agent',

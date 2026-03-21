@@ -1,5 +1,5 @@
 // ============================================================
-// POST /api/orchestrate — enhanced with routing + checkpointing
+// POST /api/orchestrate — v3 with HITL, audit log export, streaming
 // Returns a Server-Sent Events (SSE) stream for real-time updates
 // ============================================================
 
@@ -12,7 +12,7 @@ export const maxDuration = 300; // 5 minutes for full pipeline
 export async function POST(request: NextRequest) {
     try {
         const body = await request.json();
-        const { requirement, resumeCheckpointId } = body;
+        const { requirement, resumeCheckpointId, hitlEnabled } = body;
 
         if (!requirement || typeof requirement !== 'string' || requirement.trim().length === 0) {
             return new Response(
@@ -41,16 +41,18 @@ export async function POST(request: NextRequest) {
                     const result = await runPipeline(
                         requirement,
                         onEvent,
-                        resumeCheckpointId
+                        resumeCheckpointId,
+                        hitlEnabled === true
                     );
 
-                    // Send final result with checkpointId and routeDecision
+                    // Send final result with audit log export
                     const finalEvent = `data: ${JSON.stringify({
                         type: 'final_result',
                         success: result.success,
                         results: result.results,
                         checkpointId: result.checkpointId,
                         routeDecision: result.routeDecision,
+                        auditLog: result.auditLog?.export(),
                         timestamp: new Date().toISOString(),
                     })}\n\n`;
                     controller.enqueue(encoder.encode(finalEvent));
