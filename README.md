@@ -1,12 +1,12 @@
 <div align="center">
 
-# 🚀 Multi-Agent AI Orchestrator
+# 🚀 Multi-Agent AI Orchestrator (Enterprise Edition)
 
-<img src="https://readme-typing-svg.demolab.com?font=Fira+Code&size=22&duration=3000&pause=1000&color=6366F1&center=true&vCenter=true&width=700&lines=The+Most+Advanced+Open-Source+AI+Orchestrator;8+Agents+%C2%B7+14+Enterprise+Features+%C2%B7+100%25+Free;Transforms+Plain+English+%E2%86%92+Production+Code;Multi-Language+%C2%B7+Security+%C2%B7+Compliance+%C2%B7+ROI" alt="Typing SVG" />
+<img src="https://readme-typing-svg.demolab.com?font=Fira+Code&size=22&duration=3000&pause=1000&color=6366F1&center=true&vCenter=true&width=760&lines=Enterprise+Multi-Agent+AI+Orchestration+Platform;Visual+Pipeline+Builder+%C2%B7+RBAC+%C2%B7+HITL+%C2%B7+Telemetry;LangFlow%2FFlowise+Style+Drag+%26+Drop+Workflows;Open-Source+Alternative+to+Enterprise+Agent+Platforms" alt="Typing SVG" />
 
-### **The only open-source AI code orchestrator that does what enterprise tools charge $50,000/yr for — completely free.**
+### **Open-source enterprise AI orchestration platform with visual workflow editor, RBAC, multi-provider LLM runtime, HITL, telemetry, and production-grade governance.**
 
-8 specialized agents · 9 enterprise gaps closed · 5 Phase 1 power features · 14 total enhancements
+8 specialized agents · competitor-grade feature parity · visual DAG editor + RBAC + enterprise controls
 
 [![Next.js](https://img.shields.io/badge/Next.js_16-black?style=for-the-badge&logo=next.js)](https://nextjs.org/)
 [![TypeScript](https://img.shields.io/badge/TypeScript_5-3178C6?style=for-the-badge&logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
@@ -27,9 +27,15 @@
 
 ---
 
-[🚀 Quick Start](#-quick-start) · [🤖 8 Agents](#-the-8-agents) · [✨ 9 Enterprise Gaps](#-v3--9-enterprise-gaps-closed) · [⚡ 5 New Features](#-phase-1-enterprise-features-new) · [🏗️ Architecture](#️-full-architecture) · [📡 API](#-api-reference) · [🗺️ Roadmap](#️-roadmap)
+[🚀 Quick Start](#-quick-start) · [🏆 Competitor Parity](#-competitor-feature-parity--enterprise-readiness) · [🎨 Visual Pipeline Builder](#-visual-pipeline-builder-enterprise-ux) · [👥 RBAC & Team Controls](#-rbac--team-management-enterprise-controls) · [🤖 8 Agents](#-the-8-agents) · [🏗️ Architecture](#️-full-architecture) · [📡 API](#-api-reference) · [🗺️ Roadmap](#️-roadmap)
 
 </div>
+
+---
+
+## 🔎 SEO Keywords
+
+Multi-Agent AI Orchestrator, Enterprise AI Orchestration Platform, Visual Pipeline Builder, Drag and Drop AI Workflow Editor, LangFlow Alternative, Flowise Alternative, CrewAI Alternative, LangGraph Alternative, OpenDevin Alternative, RBAC for AI Agents, Human in the Loop AI, Multi-Provider LLM Orchestration, AI Agent Telemetry Dashboard, AI Workflow Automation, AI Governance Platform.
 
 ---
 
@@ -53,6 +59,47 @@
 | **💾 Never Lose Progress** | Checkpoints every stage to disk — resume from exactly where you left off |
 | **🐙 Ships to GitHub** | Pushes all generated files to a new GitHub repo in one click |
 | **🎨 Premium UI** | Glassmorphism dark theme, micro-animations, and a design that puts enterprise tools to shame |
+| **🧩 Visual Pipeline Builder** | Enterprise-grade drag-and-drop DAG editor with workflow catalog, node inspector, zoom controls, and branch visualization |
+| **👥 RBAC + Team Panel** | Admin/member/viewer roles with permission-aware UI, team management panel, and enterprise policy visibility |
+
+---
+
+## 🥇 Competitor Feature Parity + Enterprise Readiness
+
+This repository now includes the missing capabilities commonly found in paid platforms:
+
+- ✅ **Visual / Low-Code Workflow Editor** (LangFlow / Flowise style)
+- ✅ **Human-in-the-Loop approvals** with pause/resume and decision endpoint
+- ✅ **Multi-provider LLM runtime** (provider/model selection per agent at run time)
+- ✅ **Session memory + context persistence**
+- ✅ **Observability + audit export dashboard**
+- ✅ **Connectors + webhook-triggered orchestration**
+- ✅ **Team & RBAC controls** (`admin`, `member`, `viewer`) with enterprise UI
+- ✅ **Flexible DAG workflows** with branching / parallel / merge nodes
+- ✅ **Agent diversity + tool execution** (Product, UX, code execution sandbox)
+
+In short: this is not just a linear demo pipeline anymore - it is a production-oriented, enterprise-ready orchestration workspace.
+
+---
+
+## 🎨 Visual Pipeline Builder (Enterprise UX)
+
+- Full-screen visual workflow experience with drag-and-drop node movement
+- Workflow catalog for standard / security-first / rapid-prototype DAGs
+- Node inspector panel (conditions, human checkpoints, branch targets)
+- Zoom controls and clean edge rendering for branch readability
+- Direct "Run Workflow" execution from the builder UI
+
+This is designed to be familiar for teams using LangFlow, Flowise, or graph-based orchestration tools.
+
+---
+
+## 👥 RBAC + Team Management (Enterprise Controls)
+
+- Role-based permissions: `admin`, `member`, `viewer`
+- Team management panel with role assignment and member lifecycle controls
+- Permission-aware UI gating for pipeline execution, settings administration, and workflow access
+- Enterprise policy visibility in-app for governance clarity
 
 ---
 
@@ -476,6 +523,7 @@ multi-agent-system/
 │   │   ├── skills/
 │   │   │   └── languages.ts                  # 🆕 7-language skill registry (F5)
 │   │   ├── providers/index.ts                # Multi-provider LLM factory
+│   │   ├── providers/runtime.ts              # Runtime provider/model resolver per agent
 │   │   ├── validation/
 │   │   │   ├── schemas.ts                    # Zod schemas (Zod v4 compatible)
 │   │   │   └── handoff.ts                    # validateHandoff() utility
@@ -490,6 +538,8 @@ multi-agent-system/
 │       ├── AgentCard.tsx                     # Status-aware agent card
 │       ├── HITLModal.tsx                     # HITL approval modal
 │       ├── SettingsPanel.tsx                 # Provider/model/delivery/memory settings
+│       ├── EnterpriseTeamPanel.tsx           # RBAC + team management enterprise panel
+│       ├── VisualEditor.tsx                  # Drag-and-drop visual DAG workflow builder
 │       ├── VisionUploader.tsx                # 🆕 Vision-to-Code uploader (F3)
 │       ├── EnhancedAnalyticsPanel.tsx        # 🆕 ROI + Debt + Compliance dashboard (F7)
 │       ├── OutputPanel.tsx
@@ -511,7 +561,15 @@ Main pipeline. Returns Server-Sent Events stream.
 {
   "requirement": "Build a FastAPI REST API for a todo app with JWT auth",
   "hitlEnabled": true,
-  "resumeCheckpointId": "optional-for-resume"
+  "resumeCheckpointId": "optional-for-resume",
+  "workflowId": "standard-pipeline",
+  "customModels": {
+    "developer": { "provider": "openai", "model": "gpt-4o" }
+  },
+  "apiKeys": {
+    "openai": "sk-..."
+  },
+  "ollamaUrl": "http://localhost:11434"
 }
 ```
 
@@ -529,6 +587,8 @@ Main pipeline. Returns Server-Sent Events stream.
 | `memory_loaded` | Memory preferences injected (Gap #8) |
 | `iteration_info` | Language detection, debt scan, dev/review loop info |
 | `final_result` | Complete results + `debtReport` + `detectedLanguage` + `auditLog` |
+
+**Runtime provider note:** `customModels`, `apiKeys`, and `ollamaUrl` are passed through to agent runtime, enabling per-agent provider/model execution.
 
 ### POST `/api/hitl`
 

@@ -30,6 +30,9 @@ export const PROVIDER_MODELS: Record<ProviderName, string[]> = {
   openai: ['gpt-4o', 'gpt-4o-mini', 'gpt-4-turbo', 'o3-mini'],
   anthropic: ['claude-opus-4-5', 'claude-sonnet-4-5', 'claude-haiku-4-5-20251001'],
   ollama: ['llama3', 'mistral', 'codellama', 'deepseek-coder', 'phi3'],
+  google: ['gemini-1.5-pro', 'gemini-1.5-flash', 'gemini-1.0-pro'],
+  'aws-bedrock': ['anthropic.claude-v2', 'meta.llama3'],
+  'azure-openai': ['gpt-4o', 'gpt-4o-mini', 'gpt-35-turbo'],
 };
 
 export interface ProviderConfig {
@@ -79,6 +82,22 @@ export function buildProvider(config: ProviderConfig) {
         return createGroq({ apiKey: process.env.GROQ_API_KEY! });
       }
     }
+
+    case 'google': {
+      try {
+        // eslint-disable-next-line @typescript-eslint/no-require-imports
+        const { createGoogleGenerativeAI } = require('@ai-sdk/google');
+        return createGoogleGenerativeAI({ apiKey: config.apiKey ?? process.env.GOOGLE_API_KEY });
+      } catch {
+        console.warn('[providers] @ai-sdk/google not installed, falling back to Groq');
+        return createGroq({ apiKey: process.env.GROQ_API_KEY! });
+      }
+    }
+
+    case 'aws-bedrock':
+    case 'azure-openai':
+      console.warn(`[providers] ${config.name} provider stub, falling back to Groq`);
+      return createGroq({ apiKey: process.env.GROQ_API_KEY! });
 
     default:
       return createGroq({ apiKey: process.env.GROQ_API_KEY! });

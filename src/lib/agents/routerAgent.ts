@@ -4,9 +4,9 @@
 // Classifies user input → PipelineMode in ~200ms
 // ============================================================
 
-import { createGroq } from '@ai-sdk/groq';
 import { generateText } from 'ai';
 import { PipelineMode, RouteDecision, AgentName, AGENT_CONFIGS } from '@/lib/types';
+import { ProviderRuntimeOptions, getRuntimeModelForAgent } from '@/lib/providers/runtime';
 
 const SKIPPED_AGENTS: Record<PipelineMode, AgentName[]> = {
     FULL_PIPELINE: [],
@@ -63,13 +63,13 @@ function getModeFromJSON(text: string): RouteDecision {
     }
 }
 
-export async function classifyIntent(requirement: string): Promise<RouteDecision> {
+export async function classifyIntent(requirement: string, runtime?: ProviderRuntimeOptions): Promise<RouteDecision> {
     try {
-        const groq = createGroq({ apiKey: process.env.GROQ_API_KEY! });
         const config = AGENT_CONFIGS['router-agent'];
+        const runtimeModel = getRuntimeModelForAgent('router-agent', runtime);
 
         const { text } = await generateText({
-            model: groq(config.model),
+            model: runtimeModel.model as Parameters<typeof generateText>[0]['model'],
             system: ROUTER_SYSTEM_PROMPT,
             prompt: `User request: "${requirement}"`,
             maxOutputTokens: config.maxTokens,

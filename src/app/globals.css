@@ -12,7 +12,7 @@
 
   --text-primary: #e8e8f0;
   --text-secondary: #9898b0;
-  --text-tertiary: #6868808;
+  --text-tertiary: #686880;
   --text-muted: #4a4a60;
 
   --border-primary: rgba(255, 255, 255, 0.08);
@@ -1086,4 +1086,58 @@ body::before {
   color: var(--text-primary);
   font-family: var(--font-mono);
   font-size: 12px;
+}
+
+/* ── Enterprise UI Overrides ── */
+.app-header {
+  background: linear-gradient(180deg, rgba(8, 12, 22, 0.96), rgba(8, 12, 22, 0.88));
+  border-bottom-color: rgba(148, 163, 184, 0.18);
+}
+
+.main-content {
+  max-width: 1520px;
+  gap: 22px;
+}
+
+.input-section,
+.output-section,
+.stats-bar {
+  border-color: rgba(148, 163, 184, 0.2);
+  background: linear-gradient(180deg, rgba(15, 23, 42, 0.72), rgba(8, 12, 22, 0.72));
+  box-shadow: 0 8px 26px rgba(2, 6, 23, 0.28);
+}
+
+.agent-card {
+  border-color: rgba(148, 163, 184, 0.24);
+  background: linear-gradient(135deg, rgba(15, 23, 42, 0.84), rgba(10, 14, 24, 0.88));
+}
+
+.agent-card:hover {
+  border-color: rgba(148, 163, 184, 0.4);
+  transform: translateY(-1px);
+}
+
+.agent-description {
+  color: #94a3b8;
+}
+
+.output-header {
+  background: linear-gradient(180deg, rgba(15, 23, 42, 0.75), rgba(10, 14, 24, 0.75));
+}
+
+.output-body {
+  background: linear-gradient(180deg, rgba(9, 14, 24, 0.5), rgba(4, 8, 16, 0.45));
+}
+
+.btn-primary {
+  background: linear-gradient(135deg, #4f46e5, #2563eb);
+}
+
+.btn-secondary {
+  background: rgba(148, 163, 184, 0.08);
+  color: #cbd5e1;
+}
+
+.section-divider {
+  color: #94a3b8;
 }

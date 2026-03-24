@@ -12,13 +12,16 @@ import {
 } from '@/lib/providers';
 import { loadMemory, clearMemory } from '@/lib/memory';
 
-const PROVIDERS: ProviderName[] = ['groq', 'openai', 'anthropic', 'ollama'];
+const PROVIDERS: ProviderName[] = ['groq', 'openai', 'anthropic', 'ollama', 'google', 'aws-bedrock', 'azure-openai'];
 
 const PROVIDER_DISPLAY: Record<ProviderName, { label: string; color: string; icon: string }> = {
   groq: { label: 'Groq', color: '#f97316', icon: '⚡' },
   openai: { label: 'OpenAI', color: '#10a37f', icon: '🤖' },
   anthropic: { label: 'Anthropic', color: '#c8a2e9', icon: '🔮' },
   ollama: { label: 'Ollama (Local)', color: '#6366f1', icon: '🦙' },
+  google: { label: 'Google Gemini', color: '#4285F4', icon: '✨' },
+  'aws-bedrock': { label: 'AWS Bedrock', color: '#FF9900', icon: '☁️' },
+  'azure-openai': { label: 'Azure OpenAI', color: '#0078D4', icon: '💼' },
 };
 
 const AGENT_DISPLAY_NAMES: Record<string, string> = {

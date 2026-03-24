@@ -4,13 +4,13 @@
 // CRITICAL or HIGH severity blocks the pipeline.
 // ============================================================
 
-import { createGroq } from '@ai-sdk/groq';
 import { generateText } from 'ai';
 import { AgentResult, AGENT_CONFIGS } from '@/lib/types';
 import { AgentContext } from '@/lib/context';
 import { SECURITY_REVIEWER_PROMPT } from '@/lib/prompts/security.prompt';
 import { validateHandoff } from '@/lib/validation/handoff';
 import { SecurityOutputSchema, SecurityOutput } from '@/lib/validation/schemas';
+import { ProviderRuntimeOptions, getRuntimeModelForAgent } from '@/lib/providers/runtime';
 
 const config = AGENT_CONFIGS['security-reviewer'];
 
@@ -24,14 +24,17 @@ export interface SecurityReviewResult extends AgentResult {
 export async function runSecurityReviewer(
   generatedCode: string,
   context: AgentContext,
+  runtime?: ProviderRuntimeOptions
 ): Promise<SecurityReviewResult> {
   const startTime = Date.now();
+  let modelLabel = config.model;
 
   try {
-    const groq = createGroq({ apiKey: process.env.GROQ_API_KEY! });
+    const runtimeModel = getRuntimeModelForAgent('security-reviewer', runtime);
+    modelLabel = `${runtimeModel.resolved.provider}:${runtimeModel.resolved.model}`;
 
     const { text, usage } = await generateText({
-      model: groq(config.model),
+      model: runtimeModel.model as Parameters<typeof generateText>[0]['model'],
       system: SECURITY_REVIEWER_PROMPT,
       prompt: `Review the following generated code for security vulnerabilities:\n\n${generatedCode}`,
       maxOutputTokens: config.maxTokens,
@@ -51,7 +54,7 @@ export async function runSecurityReviewer(
         status: 'complete',
         output: text,
         timestamp: new Date().toISOString(),
-        model: config.model,
+        model: modelLabel,
         tokensUsed: usage?.totalTokens,
         latencyMs,
         securityOutput: {
@@ -75,7 +78,7 @@ export async function runSecurityReviewer(
       status: 'complete',
       output: text,
       timestamp: new Date().toISOString(),
-      model: config.model,
+      model: modelLabel,
       tokensUsed: usage?.totalTokens,
       latencyMs,
       securityOutput,
@@ -91,7 +94,7 @@ export async function runSecurityReviewer(
       status: 'error',
       output: '',
       timestamp: new Date().toISOString(),
-      model: config.model,
+      model: modelLabel,
       latencyMs: Date.now() - startTime,
       error: error instanceof Error ? error.message : 'Unknown error',
       blocked: false,

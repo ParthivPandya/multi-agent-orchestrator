@@ -3,11 +3,11 @@
 // Model: llama-3.3-70b-versatile (strongest reasoning on free tier)
 // ============================================================
 
-import { createGroq } from '@ai-sdk/groq';
 import { generateText } from 'ai';
 import { AgentResult, AGENT_CONFIGS } from '@/lib/types';
 import { AgentContext } from '@/lib/context';
 import { REVIEWER_SYSTEM_PROMPT, getReviewerPrompt } from '@/lib/prompts/reviewer.prompt';
+import { ProviderRuntimeOptions, getRuntimeModelForAgent } from '@/lib/providers/runtime';
 
 const config = AGENT_CONFIGS['code-reviewer'];
 
@@ -16,15 +16,18 @@ export async function runCodeReviewer(
     requirements: string,
     context: AgentContext,
     ragContext?: string,
-    lintContext?: string
+    lintContext?: string,
+    runtime?: ProviderRuntimeOptions
 ): Promise<AgentResult> {
     const startTime = Date.now();
+    let modelLabel = config.model;
     try {
-        const groq = createGroq({ apiKey: process.env.GROQ_API_KEY! });
+        const runtimeModel = getRuntimeModelForAgent('code-reviewer', runtime);
+        modelLabel = `${runtimeModel.resolved.provider}:${runtimeModel.resolved.model}`;
         const iteration = context.getIterationCount('code-reviewer') + 1;
 
         const { text, usage } = await generateText({
-            model: groq(config.model),
+            model: runtimeModel.model as Parameters<typeof generateText>[0]['model'],
             system: REVIEWER_SYSTEM_PROMPT,
             prompt: getReviewerPrompt(code, requirements, ragContext, lintContext),
             maxOutputTokens: config.maxTokens,
@@ -36,7 +39,7 @@ export async function runCodeReviewer(
             status: 'complete',
             output: text,
             timestamp: new Date().toISOString(),
-            model: config.model,
+            model: modelLabel,
             tokensUsed: usage?.totalTokens,
             iterationNumber: iteration,
             latencyMs: Date.now() - startTime,
@@ -50,7 +53,7 @@ export async function runCodeReviewer(
             status: 'error',
             output: '',
             timestamp: new Date().toISOString(),
-            model: config.model,
+            model: modelLabel,
             latencyMs: Date.now() - startTime,
             error: error instanceof Error ? error.message : 'Unknown error occurred',
         };

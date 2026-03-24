@@ -36,6 +36,7 @@ import { saveCheckpoint, loadCheckpoint } from '@/lib/workspace/checkpoint';
 import { BUILT_IN_FLOWS, FlowDefinition } from '@/lib/flows/types';
 import { createHITLRequest, waitForHumanDecision } from '@/lib/hitl';
 import { AuditLog, generateRunId } from '@/lib/audit';
+import { ProviderRuntimeOptions } from '@/lib/providers/runtime';
 import { detectLanguage, getSkillPrompt } from '@/lib/skills/languages';
 import {
   validateHandoff,
@@ -94,7 +95,7 @@ async function withRetry<T extends AgentResult>(
     return lastResult!;
 }
 
-function emitEvent(
+export function emitEvent(
     callback: (event: PipelineEvent) => void,
     event: PipelineEvent
 ): void {
@@ -107,7 +108,7 @@ function emitEvent(
 
 // ─── Stage runner helper ───────────────────────────────────────────────────────
 
-async function runStage<T extends AgentResult>(
+export async function runStage<T extends AgentResult>(
     agentFn: () => Promise<T>,
     agentName: AgentName,
     stage: string,
@@ -196,7 +197,8 @@ export async function runPipeline(
     requirement: string,
     onEvent: (event: PipelineEvent) => void,
     resumeCheckpointId?: string,
-    hitlEnabled = false
+    hitlEnabled = false,
+    runtime?: ProviderRuntimeOptions
 ): Promise<{
     success: boolean;
     results: Record<string, AgentResult>;
@@ -254,7 +256,7 @@ export async function runPipeline(
             timestamp: new Date().toISOString(),
         });
 
-        const routeDecision = await classifyIntent(requirement);
+        const routeDecision = await classifyIntent(requirement, runtime);
 
         emitEvent(onEvent, {
             type: 'route_decision',
@@ -294,7 +296,7 @@ export async function runPipeline(
 
         if (!skip('requirements-analyst') && !completedStages.includes('requirements')) {
             const { result, failed } = await runStage(
-                () => runRequirementsAnalyst(requirement, context),
+                () => runRequirementsAnalyst(requirement, context, runtime),
                 'requirements-analyst',
                 'requirements',
                 onEvent,
@@ -332,7 +334,7 @@ export async function runPipeline(
 
         if (!skip('task-planner') && !completedStages.includes('tasks')) {
             const { result, failed } = await runStage(
-                () => runTaskPlanner(requirementsOutput || requirement, context),
+                () => runTaskPlanner(requirementsOutput || requirement, context, runtime),
                 'task-planner',
                 'tasks',
                 onEvent,
@@ -440,7 +442,8 @@ export async function runPipeline(
                         reviewerFeedback,
                         ragContext + devSearchContext,
                         developerChunkHandler,
-                        languageSkillPrompt  // Feature 5: language skill injection
+                        languageSkillPrompt,  // Feature 5: language skill injection
+                        runtime
                     ),
                     'developer',
                     'code',
@@ -504,7 +507,8 @@ export async function runPipeline(
                             requirementsOutput || requirement,
                             context,
                             ragContext,
-                            lintContext
+                            lintContext,
+                            runtime
                         ),
                         'code-reviewer',
                         'review',
@@ -632,7 +636,7 @@ export async function runPipeline(
 
             auditLog.log({ eventType: 'stage_start', stage: 'security', agentName: 'security-reviewer' });
 
-            const securityResult = await runSecurityReviewer(securityCode, context);
+            const securityResult = await runSecurityReviewer(securityCode, context, runtime);
 
             emitEvent(onEvent, {
                 type: 'stage_complete',
@@ -701,7 +705,8 @@ export async function runPipeline(
                     () => runTestingAgent(
                         codeResult?.output || requirementsOutput || requirement,
                         requirementsOutput || requirement,
-                        context
+                        context,
+                        runtime
                     ),
                     'testing-agent',
                     'testing',
@@ -758,7 +763,8 @@ export async function runPipeline(
                 () => runDeploymentAgent(
                     codeResult?.output || requirementsOutput || requirement,
                     requirementsOutput || requirement,
-                    context
+                    context,
+                    runtime
                 ),
                 'deployment-agent',
                 'deployment',

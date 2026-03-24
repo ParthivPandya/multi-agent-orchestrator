@@ -3,24 +3,27 @@
 // Model: llama-3.1-8b-instant (fast structured extraction)
 // ============================================================
 
-import { createGroq } from '@ai-sdk/groq';
 import { generateText } from 'ai';
 import { AgentResult, AGENT_CONFIGS } from '@/lib/types';
 import { AgentContext } from '@/lib/context';
 import { ANALYST_SYSTEM_PROMPT, getAnalystPrompt } from '@/lib/prompts/analyst.prompt';
+import { ProviderRuntimeOptions, getRuntimeModelForAgent } from '@/lib/providers/runtime';
 
 const config = AGENT_CONFIGS['requirements-analyst'];
 
 export async function runRequirementsAnalyst(
     requirement: string,
-    context: AgentContext
+    context: AgentContext,
+    runtime?: ProviderRuntimeOptions
 ): Promise<AgentResult> {
     const startTime = Date.now();
+    let modelLabel = config.model;
     try {
-        const groq = createGroq({ apiKey: process.env.GROQ_API_KEY! });
+        const runtimeModel = getRuntimeModelForAgent('requirements-analyst', runtime);
+        modelLabel = `${runtimeModel.resolved.provider}:${runtimeModel.resolved.model}`;
 
         const { text, usage } = await generateText({
-            model: groq(config.model),
+            model: runtimeModel.model as Parameters<typeof generateText>[0]['model'],
             system: ANALYST_SYSTEM_PROMPT,
             prompt: getAnalystPrompt(requirement),
             maxOutputTokens: config.maxTokens,
@@ -32,7 +35,7 @@ export async function runRequirementsAnalyst(
             status: 'complete',
             output: text,
             timestamp: new Date().toISOString(),
-            model: config.model,
+            model: modelLabel,
             tokensUsed: usage?.totalTokens,
             latencyMs: Date.now() - startTime,
         };
@@ -45,7 +48,7 @@ export async function runRequirementsAnalyst(
             status: 'error',
             output: '',
             timestamp: new Date().toISOString(),
-            model: config.model,
+            model: modelLabel,
             latencyMs: Date.now() - startTime,
             error: error instanceof Error ? error.message : 'Unknown error occurred',
         };

@@ -8,6 +8,7 @@ import {
 import { parseGeneratedFiles, ParsedFile } from '@/lib/fileParser';
 import { saveToHistory } from '@/lib/history';
 import { loadMemory, updateMemory, extractPreferencesFromAnalystOutput } from '@/lib/memory';
+import { Role, canManageSettings, canManageWorkflows, canRunPipeline } from '@/lib/rbac';
 import RequirementInput from '@/components/RequirementInput';
 import PipelineView from '@/components/PipelineView';
 import OutputPanel from '@/components/OutputPanel';
@@ -15,7 +16,10 @@ import WorkspaceViewer from '@/components/WorkspaceViewer';
 import AnalyticsPanel from '@/components/AnalyticsPanel';
 import HistoryPanel from '@/components/HistoryPanel';
 import HITLModal from '@/components/HITLModal';
+import VisualEditor from '@/components/VisualEditor';
+import { ObservabilityDashboard } from '@/components/ObservabilityDashboard';
 import SettingsPanel from '@/components/SettingsPanel';
+import EnterpriseTeamPanel from '@/components/EnterpriseTeamPanel';
 
 const INITIAL_STATUSES: Record<AgentName, AgentStatus> = {
   'router-agent': 'idle',
@@ -26,6 +30,8 @@ const INITIAL_STATUSES: Record<AgentName, AgentStatus> = {
   'security-reviewer': 'idle',
   'testing-agent': 'idle',
   'deployment-agent': 'idle',
+  'product-manager': 'idle',
+  'ux-designer': 'idle',
 };
 
 // Map stage names to agent names
@@ -98,6 +104,11 @@ export default function Home() {
 
   // Gap #2 — Settings panel
   const [showSettings, setShowSettings] = useState(false);
+  const [showTeamPanel, setShowTeamPanel] = useState(false);
+  const [currentRole, setCurrentRole] = useState<Role>('admin');
+
+  // New features
+  const [showVisualEditor, setShowVisualEditor] = useState(false);
 
   // GitHub push state (Gap #5)
   const [isPushingToGitHub, setIsPushingToGitHub] = useState(false);
@@ -107,6 +118,10 @@ export default function Home() {
 
   useEffect(() => {
     setMemoryRunCount(loadMemory().runCount);
+    const storedRole = localStorage.getItem('mao_user_role') as Role | null;
+    if (storedRole === 'admin' || storedRole === 'member' || storedRole === 'viewer') {
+      setCurrentRole(storedRole);
+    }
   }, []);
 
   // Clear retry info after a delay
@@ -137,6 +152,7 @@ export default function Home() {
     setGithubRepoUrl(null);
     setShowHITLModal(false);
     setHitlRequest(null);
+    setShowVisualEditor(false);
   }, []);
 
   const handleStop = useCallback(() => {
@@ -231,7 +247,11 @@ export default function Home() {
     URL.revokeObjectURL(url);
   }, [auditLogJson]);
 
-  const handleSubmit = useCallback(async (requirement: string, resumeFromCheckpointId?: string) => {
+  const handleSubmit = useCallback(async (requirement: string, resumeFromCheckpointId?: string, workflowId?: string) => {
+    if (!canRunPipeline(currentRole)) {
+      alert('Your role does not allow running pipelines. Please ask an admin for elevated access.');
+      return;
+    }
     if (!resumeFromCheckpointId) resetPipeline();
     setIsRunning(true);
     setCurrentRequirement(requirement);
@@ -249,6 +269,24 @@ export default function Home() {
           requirement,
           resumeCheckpointId: resumeFromCheckpointId,
           hitlEnabled,
+          workflowId,
+          customModels: (() => {
+            try {
+              const raw = localStorage.getItem('mao_agent_models');
+              return raw ? JSON.parse(raw) : undefined;
+            } catch {
+              return undefined;
+            }
+          })(),
+          apiKeys: (() => {
+            try {
+              const raw = localStorage.getItem('mao_api_keys');
+              return raw ? JSON.parse(raw) : undefined;
+            } catch {
+              return undefined;
+            }
+          })(),
+          ollamaUrl: localStorage.getItem('mao_ollama_url') || undefined,
         }),
         signal: controller.signal,
       });
@@ -500,7 +538,7 @@ export default function Home() {
       }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [resetPipeline, currentRequirement, pipelineComplete, hitlEnabled]);
+  }, [resetPipeline, currentRequirement, pipelineComplete, hitlEnabled, currentRole]);
 
   // Parse generated files from developer output
   const parsedFiles: ParsedFile[] = useMemo(() => {
@@ -592,6 +630,12 @@ export default function Home() {
         hitlEnabled={hitlEnabled}
         onHITLToggle={setHitlEnabled}
       />
+      <EnterpriseTeamPanel
+        isOpen={showTeamPanel}
+        onClose={() => setShowTeamPanel(false)}
+        currentRole={currentRole}
+        onRoleChange={setCurrentRole}
+      />
 
       {/* Header */}
       <header className="app-header">
@@ -636,9 +680,39 @@ export default function Home() {
               </div>
             )}
 
+            {/* Visual Editor Toggle */}
+            <button
+              onClick={() => setShowVisualEditor(true)}
+              disabled={!canManageWorkflows(currentRole)}
+              style={{
+                padding: '6px 12px',
+                borderRadius: '8px',
+                border: '1px solid rgba(16, 185, 129, 0.3)',
+                background: 'rgba(16, 185, 129, 0.1)',
+                color: '#34d399',
+                fontSize: '12px',
+                fontWeight: 600,
+                cursor: canManageWorkflows(currentRole) ? 'pointer' : 'not-allowed',
+                fontFamily: 'var(--font-sans)',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '6px',
+                transition: 'all 0.15s',
+                opacity: canManageWorkflows(currentRole) ? 1 : 0.55,
+              }}
+            >
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
+                <line x1="3" y1="9" x2="21" y2="9"/>
+                <line x1="9" y1="21" x2="9" y2="9"/>
+              </svg>
+              Visual Builder
+            </button>
+
             {/* Gap #2: Settings button */}
             <button
               onClick={() => setShowSettings(true)}
+              disabled={!canManageSettings(currentRole)}
               style={{
                 padding: '6px 12px',
                 borderRadius: '8px',
@@ -646,15 +720,32 @@ export default function Home() {
                 background: 'rgba(255,255,255,0.05)',
                 color: 'var(--text-muted)',
                 fontSize: '12px',
-                cursor: 'pointer',
+                cursor: canManageSettings(currentRole) ? 'pointer' : 'not-allowed',
                 fontFamily: 'var(--font-sans)',
                 display: 'flex',
                 alignItems: 'center',
                 gap: '5px',
                 transition: 'all 0.15s',
+                opacity: canManageSettings(currentRole) ? 1 : 0.55,
               }}
             >
               ⚙️ Settings
+            </button>
+
+            <button
+              onClick={() => setShowTeamPanel(true)}
+              style={{
+                padding: '6px 12px',
+                borderRadius: '8px',
+                border: '1px solid rgba(99,102,241,0.25)',
+                background: 'rgba(99,102,241,0.1)',
+                color: '#a5b4fc',
+                fontSize: '12px',
+                cursor: 'pointer',
+                fontFamily: 'var(--font-sans)',
+              }}
+            >
+              👥 Team
             </button>
 
             <HistoryPanel onRestore={handleRestoreHistory} />
@@ -662,6 +753,18 @@ export default function Home() {
             <div className="header-status">
               <div className="status-dot" />
               <span>Groq API Connected</span>
+            </div>
+            <div style={{
+              padding: '4px 10px',
+              borderRadius: '999px',
+              border: '1px solid rgba(147,197,253,0.35)',
+              background: 'rgba(59,130,246,0.12)',
+              color: '#93c5fd',
+              fontSize: '11px',
+              fontWeight: 700,
+              textTransform: 'uppercase',
+            }}>
+              {currentRole}
             </div>
           </div>
         </div>
@@ -735,6 +838,81 @@ export default function Home() {
           <span style={{ color: 'var(--text-muted)' }}>
             {Math.round(routeDecision.confidence * 100)}% confidence
           </span>
+        </div>
+      )}
+
+      {/* Full-Screen Visual Editor */}
+      {showVisualEditor && (
+        <div style={{
+          position: 'fixed',
+          inset: 0,
+          background: 'var(--bg-main)',
+          zIndex: 9999,
+          display: 'flex',
+          flexDirection: 'column'
+        }}>
+          <div style={{
+            padding: '16px 24px',
+            borderBottom: '1px solid var(--border-primary)',
+            background: 'var(--bg-glass)',
+            backdropFilter: 'blur(10px)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between'
+          }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+              <div style={{
+                background: 'rgba(16, 185, 129, 0.15)',
+                color: '#34d399',
+                padding: '6px 10px',
+                borderRadius: '8px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center'
+              }}>
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
+                  <line x1="3" y1="9" x2="21" y2="9"/>
+                  <line x1="9" y1="21" x2="9" y2="9"/>
+                </svg>
+              </div>
+              <div>
+                <h2 style={{ fontSize: '18px', fontWeight: 600, color: '#fff', margin: 0 }}>Visual Pipeline Builder</h2>
+                <div style={{ fontSize: '13px', color: 'var(--text-muted)' }}>Drag and drop nodes to visually program DAG workflows.</div>
+              </div>
+            </div>
+            
+            <button 
+              onClick={() => setShowVisualEditor(false)}
+              style={{
+                padding: '8px 16px',
+                background: 'linear-gradient(135deg, rgba(239, 68, 68, 0.15), rgba(220, 38, 38, 0.1))',
+                borderRadius: '8px',
+                color: '#f87171',
+                border: '1px solid rgba(239, 68, 68, 0.3)',
+                fontSize: '13px',
+                fontWeight: 600,
+                cursor: 'pointer',
+                fontFamily: 'var(--font-sans)',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px'
+              }}
+            >
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <line x1="18" y1="6" x2="6" y2="18"/>
+                <line x1="6" y1="6" x2="18" y2="18"/>
+              </svg>
+              Close Builder
+            </button>
+          </div>
+          
+          <div style={{ flex: 1, position: 'relative' }}>
+            <VisualEditor onRunWorkflow={(workflowId) => {
+              setShowVisualEditor(false);
+              handleSubmit(currentRequirement || 'Run from Visual Editor', undefined, workflowId);
+            }} />
+          </div>
         </div>
       )}
 
@@ -831,7 +1009,10 @@ export default function Home() {
 
         {/* Analytics Panel */}
         {showAnalytics && pipelineComplete && (
-          <AnalyticsPanel agentResults={agentResults} />
+          <div className="flex flex-col gap-6">
+            <AnalyticsPanel agentResults={agentResults} />
+            <ObservabilityDashboard auditLogJson={auditLogJson || undefined} runId={checkpointId || 'unknown'} />
+          </div>
         )}
 
         {/* Activity Feed */}

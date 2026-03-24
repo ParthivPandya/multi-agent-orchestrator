@@ -12,6 +12,8 @@ export type AgentName =
   | 'security-reviewer'
   | 'testing-agent'
   | 'deployment-agent'
+  | 'product-manager'
+  | 'ux-designer'
   | 'router-agent';
 
 export interface AgentResult {
@@ -202,7 +204,7 @@ export interface AuditEvent {
 
 // ─── Gap #2: Multi-Provider LLM Types ─────────────────────────────────────────
 
-export type ProviderName = 'groq' | 'openai' | 'anthropic' | 'ollama';
+export type ProviderName = 'groq' | 'openai' | 'anthropic' | 'ollama' | 'google' | 'aws-bedrock' | 'azure-openai';
 
 export interface AgentModelConfig {
   provider: ProviderName;
@@ -282,6 +284,10 @@ export interface OrchestrateRequest {
   resumeCheckpointId?: string;
   flowName?: string;
   hitlEnabled?: boolean;
+  workflowId?: string;
+  customModels?: Partial<Record<string, AgentModelConfig>>;
+  apiKeys?: Partial<Record<ProviderName, string>>;
+  ollamaUrl?: string;
 }
 
 export interface AgentTestRequest {
@@ -399,6 +405,24 @@ export const AGENT_CONFIGS: Record<AgentName, AgentConfig> = {
     model: 'llama-3.1-8b-instant',
     icon: '🚀',
     color: '#10b981',
+    maxTokens: 2048,
+  },
+  'product-manager': {
+    name: 'product-manager',
+    displayName: 'Product Manager',
+    description: 'Generates user stories, PRDs, and prioritizations',
+    model: 'llama-3.3-70b-versatile',
+    icon: '📊',
+    color: '#f59e0b',
+    maxTokens: 2048,
+  },
+  'ux-designer': {
+    name: 'ux-designer',
+    displayName: 'UX/UI Designer',
+    description: 'Creates comprehensive design systems and wireframes',
+    model: 'llama-3.3-70b-versatile',
+    icon: '🎨',
+    color: '#ec4899',
     maxTokens: 2048,
   },
 };
