@@ -660,28 +660,37 @@ On-demand technical debt + compliance analysis.
 
 ## 🏆 Feature Comparison
 
-| Feature | **This Project** | CrewAI | AWS Multi-Agent | ComposioHQ |
-|---------|:--------------:|:-------:|:-------:|:------:|
-| 💸 100% Free | ✅ | ❌ | ❌ | ❌ |
-| 🎨 Premium UI | ✅ | ⚠️ CLI | ⚠️ CLI | ⚠️ CLI |
-| 🌊 Token Streaming | ✅ | ❌ | ❌ | ❌ |
-| 🧭 Intelligent Routing | ✅ 4 modes | ⚠️ | ✅ | ❌ |
-| 🌍 Multi-Language (7 langs) | ✅ | ❌ | ❌ | ❌ |
-| 🖼️ Vision-to-Code | ✅ | ❌ | ❌ | ❌ |
-| 🏗️ Technical Debt Grading | ✅ A-F grade | ❌ | ❌ | ❌ |
-| ⚖️ Compliance (GDPR/HIPAA/PCI) | ✅ | ❌ | ❌ | ❌ |
-| 💰 ROI Dashboard | ✅ | ❌ | ❌ | ❌ |
-| ⏸️ Human-in-the-Loop | ✅ modal | ❌ | ❌ | ❌ |
-| 🛡️ Security Review (OWASP) | ✅ | ❌ | ❌ | ❌ |
-| 📚 RAG Knowledge | ✅ TF-IDF | ✅ | ❌ | ❌ |
-| ⚙️ Agentic Tools | ✅ | ✅ | ⚠️ | ✅ |
-| 💾 Resume on Failure | ✅ checkpoint | ❌ | ❌ | ⚠️ |
-| 🐙 GitHub Push | ✅ | ❌ | ❌ | ✅ |
-| ⚡ Parallel Execution | ✅ | ✅ | ⚠️ | ❌ |
-| 📋 Audit Log Export | ✅ JSON | ❌ | ❌ | ❌ |
-| 🧠 Agent Memory | ✅ | ❌ | ❌ | ❌ |
-| 🧪 Auto Test Generation | ✅ | ❌ | ❌ | ❌ |
-| 📦 Docker + CI/CD Output | ✅ | ❌ | ❌ | ❌ |
+### Capability Matrix (Expanded)
+
+| Feature | **This Project** | LangFlow | Flowise | LangGraph | CrewAI | AutoGen | OpenDevin | n8n |
+|---------|:----------------:|:--------:|:-------:|:---------:|:------:|:-------:|:---------:|:---:|
+| 🎨 Visual Drag-and-Drop Workflow Editor | ✅ Enterprise UI | ✅ | ✅ | ⚠️ Code-first | ⚠️ Limited | ⚠️ Limited | ⚠️ Limited | ✅ |
+| 🔀 Flexible DAG / Branching Workflows | ✅ | ✅ | ✅ | ✅ | ⚠️ | ⚠️ | ⚠️ | ✅ |
+| ⏸️ Human-in-the-Loop Controls | ✅ | ⚠️ | ✅ | ✅ | ⚠️ | ⚠️ | ⚠️ | ⚠️ |
+| 👥 Team + RBAC Controls | ✅ | ⚠️ | ⚠️ | ⚠️ | ✅ | ⚠️ | ⚠️ | ✅ |
+| 🔑 Multi-Provider LLM Runtime | ✅ Per-agent | ✅ | ✅ | ✅ | ✅ | ✅ | ⚠️ | ✅ |
+| 📊 Observability / Traces / Audit Export | ✅ | ⚠️ | ✅ | ✅ | ⚠️ | ⚠️ | ⚠️ | ✅ |
+| 🔗 Connectors + Webhook Triggers | ✅ | ⚠️ | ✅ | ⚠️ | ✅ | ⚠️ | ⚠️ | ✅ |
+| 🧠 Session Memory + Context | ✅ | ⚠️ | ✅ | ✅ | ⚠️ | ✅ | ⚠️ | ⚠️ |
+| 🛡️ Security Review Gate (OWASP) | ✅ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ |
+| 🧪 Built-in Testing Agent Flow | ✅ | ❌ | ❌ | ❌ | ⚠️ | ⚠️ | ✅ | ❌ |
+| 💾 Checkpoint + Resume | ✅ | ⚠️ | ⚠️ | ✅ | ⚠️ | ⚠️ | ⚠️ | ✅ |
+| 🌊 Live Token Streaming in UI | ✅ | ⚠️ | ✅ | ⚠️ | ❌ | ⚠️ | ⚠️ | ❌ |
+| 🖼️ Vision-to-Code | ✅ | ⚠️ | ⚠️ | ❌ | ❌ | ❌ | ⚠️ | ❌ |
+
+> Legend: ✅ Native support · ⚠️ Partial / plugin / code-heavy setup · ❌ Not a core built-in capability
+
+### Competitor Snapshot
+
+| Platform | Strength | Where this repo stands out |
+|----------|----------|----------------------------|
+| **LangFlow** | Great visual flow authoring | Adds stronger governance features: RBAC + HITL + security gate + audit export |
+| **Flowise** | Strong low-code orchestration and integrations | Adds built-in agent roles, security reviewer, and end-to-end software pipeline focus |
+| **LangGraph** | Robust graph + memory model | Adds richer no-code UX and productized pipeline UI for non-framework users |
+| **CrewAI** | Team/task collaboration model | Adds visual DAG builder + enterprise telemetry dashboard in one product |
+| **AutoGen** | Flexible agent conversations | Adds production UX, visual workflow builder, and governance controls |
+| **OpenDevin** | Execution-centric engineering workflows | Adds orchestration governance, routing, and enterprise monitoring controls |
+| **n8n** | Best-in-class automation/connectors | Adds specialized AI software-engineering pipeline with reviewer/security/testing agents |
 
 ---
 
