@@ -28,6 +28,7 @@ import { runTestingAgent } from '@/lib/agents/testingAgent';
 import { runDeploymentAgent } from '@/lib/agents/deploymentAgent';
 import { runSecurityReviewer } from '@/lib/agents/securityReviewer';
 import { runTechnicalDebtScanner } from '@/lib/agents/debtScanner';
+import { runComplianceAgent } from '@/lib/agents/complianceAgent';
 import { classifyIntent } from '@/lib/agents/routerAgent';
 import { retrieveRelevantChunks, formatRAGContext } from '@/lib/rag/retriever';
 import { lintCode, formatLintResult } from '@/lib/tools/lintCode';
@@ -207,6 +208,7 @@ export async function runPipeline(
     routeDecision?: RouteDecision;
     auditLog?: AuditLog;
     debtReport?: unknown;
+    complianceReport?: unknown;
     detectedLanguage?: string;
 }> {
     const context = new AgentContext();
@@ -689,6 +691,69 @@ export async function runPipeline(
             await delay(INTER_AGENT_DELAY_MS);
         }
 
+        // ── Feature 4: Compliance Agent gate ──────────────────────────────────
+        let complianceReport = undefined;
+        if (codeResult?.output && !completedStages.includes('compliance')) {
+            emitEvent(onEvent, {
+                type: 'iteration_info',
+                stage: 'compliance',
+                output: '⚖️ Running compliance analysis (OWASP/GDPR/SOC2)...',
+                timestamp: new Date().toISOString(),
+            });
+            try {
+                const complianceResult = await runComplianceAgent(
+                    codeResult.output,
+                    ['OWASP_TOP10', 'GDPR', 'SOC2']
+                );
+                complianceReport = complianceResult.complianceReport;
+                results['compliance'] = complianceResult;
+                completedStages.push('compliance');
+
+                emitEvent(onEvent, {
+                    type: 'iteration_info',
+                    stage: 'compliance',
+                    output: `⚖️ Compliance status: ${complianceResult.complianceReport?.overallStatus ?? 'WARNING'} (${complianceResult.complianceReport?.overallScore ?? 0}/100)`,
+                    timestamp: new Date().toISOString(),
+                });
+
+                auditLog.log({
+                    eventType: 'stage_complete',
+                    stage: 'compliance',
+                    agentName: 'compliance-agent',
+                    output: complianceResult.output,
+                    latencyMs: complianceResult.latencyMs,
+                    metadata: {
+                        overallStatus: complianceResult.complianceReport?.overallStatus,
+                        blockedByCompliance: complianceResult.complianceReport?.blockedByCompliance,
+                    },
+                });
+
+                if (complianceResult.complianceReport?.blockedByCompliance) {
+                    emitEvent(onEvent, {
+                        type: 'pipeline_blocked',
+                        stage: 'compliance',
+                        error: 'Pipeline blocked by Compliance Agent due to critical violations.',
+                        timestamp: new Date().toISOString(),
+                    });
+                    auditLog.log({
+                        eventType: 'pipeline_aborted',
+                        stage: 'compliance',
+                        error: 'Blocked by compliance critical violations',
+                    });
+                    return { success: false, results, context, routeDecision, auditLog, complianceReport, detectedLanguage };
+                }
+            } catch {
+                emitEvent(onEvent, {
+                    type: 'iteration_info',
+                    stage: 'compliance',
+                    output: '⚠️ Compliance analysis unavailable for this run. Pipeline continues.',
+                    timestamp: new Date().toISOString(),
+                });
+            }
+
+            await delay(INTER_AGENT_DELAY_MS);
+        }
+
         // ── Gap #6: Parallel Execution — Testing runs in parallel ─────────────
         if (!skip('testing-agent') && !completedStages.includes('tests')) {
             emitEvent(onEvent, {
@@ -816,7 +881,7 @@ export async function runPipeline(
             } catch { /* non-fatal — debt scan is always optional */ }
         }
 
-        return { success: true, results, context, checkpointId, routeDecision, auditLog, debtReport, detectedLanguage };
+        return { success: true, results, context, checkpointId, routeDecision, auditLog, debtReport, complianceReport, detectedLanguage };
 
 
     } catch (error) {

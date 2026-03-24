@@ -9,6 +9,9 @@ import { parseGeneratedFiles, ParsedFile } from '@/lib/fileParser';
 import { saveToHistory } from '@/lib/history';
 import { loadMemory, updateMemory, extractPreferencesFromAnalystOutput } from '@/lib/memory';
 import { Role, canManageSettings, canManageWorkflows, canRunPipeline } from '@/lib/rbac';
+import { computeROI, saveROIEntry, ROIMetrics } from '@/lib/roi';
+import { TechnicalDebtReport } from '@/lib/agents/debtScanner';
+import { ComplianceReport } from '@/lib/agents/complianceAgent';
 import RequirementInput from '@/components/RequirementInput';
 import PipelineView from '@/components/PipelineView';
 import OutputPanel from '@/components/OutputPanel';
@@ -18,6 +21,8 @@ import HistoryPanel from '@/components/HistoryPanel';
 import HITLModal from '@/components/HITLModal';
 import VisualEditor from '@/components/VisualEditor';
 import { ObservabilityDashboard } from '@/components/ObservabilityDashboard';
+import EnhancedAnalyticsPanel from '@/components/EnhancedAnalyticsPanel';
+import VisionUploader from '@/components/VisionUploader';
 import SettingsPanel from '@/components/SettingsPanel';
 import EnterpriseTeamPanel from '@/components/EnterpriseTeamPanel';
 
@@ -109,6 +114,10 @@ export default function Home() {
 
   // New features
   const [showVisualEditor, setShowVisualEditor] = useState(false);
+  const [showVisionUploader, setShowVisionUploader] = useState(false);
+  const [debtReport, setDebtReport] = useState<TechnicalDebtReport | null>(null);
+  const [complianceReport, setComplianceReport] = useState<ComplianceReport | null>(null);
+  const [roiMetrics, setRoiMetrics] = useState<ROIMetrics | null>(null);
 
   // GitHub push state (Gap #5)
   const [isPushingToGitHub, setIsPushingToGitHub] = useState(false);
@@ -153,6 +162,10 @@ export default function Home() {
     setShowHITLModal(false);
     setHitlRequest(null);
     setShowVisualEditor(false);
+    setShowVisionUploader(false);
+    setDebtReport(null);
+    setComplianceReport(null);
+    setRoiMetrics(null);
   }, []);
 
   const handleStop = useCallback(() => {
@@ -501,9 +514,34 @@ export default function Home() {
                 if ((event as PipelineEvent & { routeDecision?: RouteDecision }).routeDecision) {
                   setRouteDecision((event as PipelineEvent & { routeDecision?: RouteDecision }).routeDecision!);
                 }
+                if ((event as PipelineEvent & { debtReport?: unknown }).debtReport) {
+                  setDebtReport((event as PipelineEvent & { debtReport?: TechnicalDebtReport }).debtReport || null);
+                }
+                if ((event as PipelineEvent & { complianceReport?: unknown }).complianceReport) {
+                  setComplianceReport((event as PipelineEvent & { complianceReport?: ComplianceReport }).complianceReport || null);
+                }
                 // Gap #7: Store audit log
                 if ((event as PipelineEvent & { auditLog?: string }).auditLog) {
                   setAuditLogJson((event as PipelineEvent & { auditLog?: string }).auditLog!);
+                }
+                if (event.results) {
+                  const totalRunTokens = Object.values(event.results).reduce((sum, result) => sum + (result.tokensUsed || 0), 0);
+                  const totalRunLatencyMs = Object.values(event.results).reduce((sum, result) => sum + (result.latencyMs || 0), 0);
+                  const metrics = computeROI(
+                    {
+                      developer: event.results.code || null,
+                      'security-reviewer': event.results.security || null,
+                      'testing-agent': event.results.tests || null,
+                    },
+                    totalRunTokens,
+                    totalRunLatencyMs,
+                    {
+                      reviewIterations: currentIteration || 1,
+                      provider: 'groq',
+                    }
+                  );
+                  setRoiMetrics(metrics);
+                  saveROIEntry(checkpointId || `run-${Date.now()}`, metrics);
                 }
                 setPipelineComplete(true);
                 setShowAnalytics(true);
@@ -636,6 +674,27 @@ export default function Home() {
         currentRole={currentRole}
         onRoleChange={setCurrentRole}
       />
+      <VisionUploader
+        isOpen={showVisionUploader}
+        onClose={() => setShowVisionUploader(false)}
+        onCodeGenerated={(code, tokensUsed) => {
+          const now = new Date().toISOString();
+          const visionResult: AgentResult = {
+            agentName: 'developer',
+            status: 'complete',
+            output: code,
+            timestamp: now,
+            model: 'meta-llama/llama-4-maverick-17b-128e-instruct',
+            tokensUsed,
+            latencyMs: 0,
+          };
+          setAgentResults(prev => ({ ...prev, developer: visionResult }));
+          setAgentStatuses(prev => ({ ...prev, developer: 'complete' }));
+          setSelectedAgent('developer');
+          setPipelineComplete(true);
+          setShowAnalytics(true);
+        }}
+      />
 
       {/* Header */}
       <header className="app-header">
@@ -707,6 +766,26 @@ export default function Home() {
                 <line x1="9" y1="21" x2="9" y2="9"/>
               </svg>
               Visual Builder
+            </button>
+
+            <button
+              onClick={() => setShowVisionUploader(true)}
+              style={{
+                padding: '6px 12px',
+                borderRadius: '8px',
+                border: '1px solid rgba(99,102,241,0.3)',
+                background: 'rgba(99,102,241,0.12)',
+                color: '#a5b4fc',
+                fontSize: '12px',
+                fontWeight: 600,
+                cursor: 'pointer',
+                fontFamily: 'var(--font-sans)',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '6px',
+              }}
+            >
+              🖼️ Vision to Code
             </button>
 
             {/* Gap #2: Settings button */}
@@ -1011,6 +1090,11 @@ export default function Home() {
         {showAnalytics && pipelineComplete && (
           <div className="flex flex-col gap-6">
             <AnalyticsPanel agentResults={agentResults} />
+            <EnhancedAnalyticsPanel
+              debtReport={debtReport}
+              complianceReport={complianceReport}
+              roiMetrics={roiMetrics}
+            />
             <ObservabilityDashboard auditLogJson={auditLogJson || undefined} runId={checkpointId || 'unknown'} />
           </div>
         )}

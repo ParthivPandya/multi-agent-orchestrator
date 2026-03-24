@@ -584,9 +584,8 @@ Main pipeline. Returns Server-Sent Events stream.
 | `pipeline_blocked` | Security blocked deployment (Gap #4) |
 | `validation_error` | Zod schema validation warning (Gap #3) |
 | `parallel_group_start/complete` | Parallel execution (Gap #6) |
-| `memory_loaded` | Memory preferences injected (Gap #8) |
-| `iteration_info` | Language detection, debt scan, dev/review loop info |
-| `final_result` | Complete results + `debtReport` + `detectedLanguage` + `auditLog` |
+| `iteration_info` | Language detection, memory-active context, debt/compliance scan, and dev/review loop info |
+| `final_result` | Complete results + `debtReport` + `complianceReport` + `detectedLanguage` + `auditLog` |
 
 **Runtime provider note:** `customModels`, `apiKeys`, and `ollamaUrl` are passed through to agent runtime, enabling per-agent provider/model execution.
 

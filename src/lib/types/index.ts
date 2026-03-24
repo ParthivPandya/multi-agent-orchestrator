@@ -276,6 +276,11 @@ export interface PipelineEvent {
   // Memory-specific
   memoryContext?: string;
   runCount?: number;
+  // Final payload extensions
+  debtReport?: unknown;
+  complianceReport?: unknown;
+  detectedLanguage?: string;
+  auditLog?: string;
 }
 
 // API Request/Response types

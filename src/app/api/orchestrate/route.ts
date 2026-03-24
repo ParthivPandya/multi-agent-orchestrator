@@ -67,6 +67,9 @@ export async function POST(request: NextRequest) {
                             results: result.results,
                             checkpointId: result.checkpointId,
                             routeDecision: result.routeDecision,
+                            debtReport: result.debtReport,
+                            complianceReport: result.complianceReport,
+                            detectedLanguage: result.detectedLanguage,
                             auditLog: result.auditLog?.export(),
                             timestamp: new Date().toISOString(),
                         })}\n\n`;
