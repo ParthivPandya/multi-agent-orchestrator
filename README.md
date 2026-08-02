@@ -20,6 +20,8 @@
 [![GitHub issues](https://img.shields.io/github/issues/ParthivPandya/multi-agent-orchestrator?color=d73a4a)](https://github.com/ParthivPandya/multi-agent-orchestrator/issues)
 [![GitHub last commit](https://img.shields.io/github/last-commit/ParthivPandya/multi-agent-orchestrator)](https://github.com/ParthivPandya/multi-agent-orchestrator/commits/main)
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](https://github.com/ParthivPandya/multi-agent-orchestrator/pulls)
+[![CI](https://github.com/ParthivPandya/multi-agent-orchestrator/actions/workflows/ci.yml/badge.svg)](https://github.com/ParthivPandya/multi-agent-orchestrator/actions/workflows/ci.yml)
+[![Tests](https://img.shields.io/badge/tests-80%20passed-22C55E?style=flat)](https://github.com/ParthivPandya/multi-agent-orchestrator)
 
 ---
 
@@ -482,9 +484,35 @@ npm run dev
 # → http://localhost:3000
 ```
 
-### 4. Deploy (One Click)
+### 4. Run Tests
+
+```bash
+npm test
+# → 80 tests across 7 test suites
+```
+
+### 5. Deploy (One Click)
 
 [![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https://github.com/ParthivPandya/multi-agent-orchestrator&env=GROQ_API_KEY&envDescription=Get%20your%20free%20Groq%20API%20key&envLink=https://console.groq.com/)
+
+### 🐳 Docker Quick Start (Alternative)
+
+```bash
+# Clone the repository
+git clone https://github.com/ParthivPandya/multi-agent-orchestrator.git
+cd multi-agent-orchestrator
+
+# Option A: Docker Compose (recommended)
+export GROQ_API_KEY=gsk_your_api_key_here
+docker compose up --build
+# → http://localhost:3000
+
+# Option B: Docker directly
+docker build -t multi-agent-orchestrator .
+docker run -e GROQ_API_KEY=gsk_your_api_key -p 3000:3000 multi-agent-orchestrator
+```
+
+> **Tip:** The Docker setup includes health checks, volume persistence for workspace/sessions, and runs as a non-root user for security.
 
 ---
 
@@ -492,6 +520,10 @@ npm run dev
 
 ```
 multi-agent-system/
+├── .github/workflows/ci.yml                  # 🆕 GitHub Actions CI (build, lint, test)
+├── Dockerfile                                # 🆕 Multi-stage production Docker build
+├── docker-compose.yml                        # 🆕 One-command Docker setup
+├── vitest.config.ts                          # 🆕 Test configuration
 ├── src/
 │   ├── app/
 │   │   ├── page.tsx                          # Main UI — all 14 features integrated
@@ -509,6 +541,8 @@ multi-agent-system/
 │   │   ├── audit.ts                          # Audit log recorder
 │   │   ├── memory.ts                         # Cross-session memory
 │   │   ├── roi.ts                            # 🆕 ROI calculator (F7)
+│   │   ├── rbac.ts                           # RBAC + team management
+│   │   ├── sessions.ts                       # Multi-turn conversation sessions
 │   │   ├── agents/
 │   │   │   ├── routerAgent.ts                # Intent classifier
 │   │   │   ├── requirementsAnalyst.ts        # Agent 1
@@ -520,15 +554,24 @@ multi-agent-system/
 │   │   │   ├── deploymentAgent.ts            # Agent 7
 │   │   │   ├── debtScanner.ts                # 🆕 Technical Debt Scanner (F2)
 │   │   │   └── complianceAgent.ts            # 🆕 GDPR/HIPAA/PCI/SOC2 (F4)
+│   │   ├── __tests__/                        # 🆕 Unit test suite (80 tests)
+│   │   │   ├── rbac.test.ts                  # RBAC permissions + team management
+│   │   │   ├── audit.test.ts                 # Audit log + export
+│   │   │   ├── hitl.test.ts                  # HITL decisions + timeout
+│   │   │   ├── handoff.test.ts               # Zod validation + JSON extraction
+│   │   │   ├── languages.test.ts             # Language detection + skills
+│   │   │   ├── connectors.test.ts            # Connector dispatch + webhooks
+│   │   │   └── providers.test.ts             # Provider registry + fallbacks
 │   │   ├── skills/
 │   │   │   └── languages.ts                  # 🆕 7-language skill registry (F5)
+│   │   ├── connectors/index.ts               # Slack, Discord, Email, Webhook connectors
 │   │   ├── providers/index.ts                # Multi-provider LLM factory
 │   │   ├── providers/runtime.ts              # Runtime provider/model resolver per agent
 │   │   ├── validation/
 │   │   │   ├── schemas.ts                    # Zod schemas (Zod v4 compatible)
 │   │   │   └── handoff.ts                    # validateHandoff() utility
 │   │   ├── prompts/                          # System prompts for all agents
-│   │   ├── tools/                            # searchWeb, lintCode, readFile
+│   │   ├── tools/                            # searchWeb, lintCode, readFile, codeRunner
 │   │   ├── rag/                              # TF-IDF knowledge base
 │   │   ├── flows/types.ts                    # Pipeline flow DSL
 │   │   └── workspace/checkpoint.ts           # Save/load/resume
