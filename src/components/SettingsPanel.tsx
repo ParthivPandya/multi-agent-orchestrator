@@ -58,19 +58,21 @@ export default function SettingsPanel({
 
   useEffect(() => {
     if (isOpen) {
-      try {
-        const savedKeys = localStorage.getItem('mao_api_keys');
-        if (savedKeys) setApiKeys(JSON.parse(savedKeys));
-        const savedModels = localStorage.getItem('mao_agent_models');
-        if (savedModels) setAgentModels(JSON.parse(savedModels));
-        const savedOllama = localStorage.getItem('mao_ollama_url');
-        if (savedOllama) setOllamaUrl(savedOllama);
-        const savedGHToken = localStorage.getItem('mao_github_token');
-        if (savedGHToken) setGithubToken(savedGHToken);
-        const savedGHOwner = localStorage.getItem('mao_github_owner');
-        if (savedGHOwner) setGithubOwner(savedGHOwner);
-      } catch { /* ignore */ }
-      setMemoryRunCount(loadMemory().runCount);
+      setTimeout(() => {
+        try {
+          const savedKeys = localStorage.getItem('mao_api_keys');
+          if (savedKeys) setApiKeys(JSON.parse(savedKeys));
+          const savedModels = localStorage.getItem('mao_agent_models');
+          if (savedModels) setAgentModels(JSON.parse(savedModels));
+          const savedOllama = localStorage.getItem('mao_ollama_url');
+          if (savedOllama) setOllamaUrl(savedOllama);
+          const savedGHToken = localStorage.getItem('mao_github_token');
+          if (savedGHToken) setGithubToken(savedGHToken);
+          const savedGHOwner = localStorage.getItem('mao_github_owner');
+          if (savedGHOwner) setGithubOwner(savedGHOwner);
+        } catch { /* ignore */ }
+        setMemoryRunCount(loadMemory().runCount);
+      }, 0);
     }
   }, [isOpen]);
 

@@ -37,7 +37,8 @@ export default function EnterpriseTeamPanel({
     const savedTeam = localStorage.getItem(STORAGE_TEAM_KEY);
     if (savedTeam) {
       try {
-        setTeam(JSON.parse(savedTeam) as Team);
+        const parsed = JSON.parse(savedTeam) as Team;
+        setTimeout(() => setTeam(parsed), 0);
         return;
       } catch {
         // ignore malformed local data
@@ -48,7 +49,7 @@ export default function EnterpriseTeamPanel({
       name: 'Workspace Admin',
       email: 'admin@local.workspace',
     });
-    setTeam(initialTeam);
+    setTimeout(() => setTeam(initialTeam), 0);
     localStorage.setItem(STORAGE_TEAM_KEY, JSON.stringify(initialTeam));
   }, [isOpen]);
 

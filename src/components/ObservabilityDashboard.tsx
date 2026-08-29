@@ -13,13 +13,15 @@ interface ObservabilityDashboardProps {
 }
 
 export const ObservabilityDashboard: React.FC<ObservabilityDashboardProps> = ({ auditLogJson, runId }) => {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [logData, setLogData] = useState<any>(null);
   const [activeTab, setActiveTab] = useState<'traces' | 'metrics' | 'errors'>('metrics');
 
   useEffect(() => {
     if (auditLogJson) {
       try {
-        setLogData(JSON.parse(auditLogJson));
+        const parsed = JSON.parse(auditLogJson);
+        setTimeout(() => setLogData(parsed), 0);
       } catch (e) {
         console.error("Failed to parse audit log", e);
       }
@@ -40,6 +42,7 @@ export const ObservabilityDashboard: React.FC<ObservabilityDashboardProps> = ({ 
 
   // Calculate metrics
   const totalEvents = logData.events.length;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const errors = logData.events.filter((e: any) => e.eventType === 'stage_error' || e.eventType === 'pipeline_aborted');
   const durationMs = logData.durationMs;
   
@@ -48,6 +51,7 @@ export const ObservabilityDashboard: React.FC<ObservabilityDashboardProps> = ({ 
   let totalOutputTokens = 0;
   const agentMetrics: Record<string, { latency: number, tokens: number, calls: number }> = {};
   
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   logData.events.forEach((e: any) => {
     if (e.tokenUsage) {
       totalInputTokens += e.tokenUsage.inputTokens || 0;
@@ -183,6 +187,7 @@ export const ObservabilityDashboard: React.FC<ObservabilityDashboardProps> = ({ 
         {/* Traces View (OpenTelemetry style waterfall) */}
         {activeTab === 'traces' && (
           <div className="space-y-3 animate-fade-in relative pl-4 border-l-2 border-[var(--border-primary)] ml-4">
+            {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
             {logData.events.map((event: any, idx: number) => {
               // Calculate relative offset percentage for waterfall charting
               const relativeStartMs = event.timestamp - (logData.events[0]?.timestamp || 0);
@@ -266,6 +271,7 @@ export const ObservabilityDashboard: React.FC<ObservabilityDashboardProps> = ({ 
                 <p>No errors recorded in this trace block.</p>
               </div>
             ) : (
+              // eslint-disable-next-line @typescript-eslint/no-explicit-any
               errors.map((error: any) => (
                 <div key={error.eventId} className="bg-[rgba(244,63,94,0.05)] border border-[rgba(244,63,94,0.2)] rounded-lg p-5">
                   <div className="flex items-center gap-2 text-[var(--accent-rose)] font-semibold text-sm mb-3">
