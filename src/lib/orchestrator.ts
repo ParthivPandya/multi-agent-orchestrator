@@ -47,6 +47,10 @@ import {
   PlannerOutputSchema,
   ReviewerOutputSchema,
 } from '@/lib/validation/schemas';
+import { scanInput } from '@/lib/guardrails/inputGuardrails';
+import { scanOutput } from '@/lib/guardrails/outputGuardrails';
+import { runReflectionAgent } from '@/lib/agents/reflectionAgent';
+import { runDocumentationAgent } from '@/lib/agents/documentationAgent';
 
 const MAX_REVIEW_ITERATIONS = 3;
 const INTER_AGENT_DELAY_MS = 1500;
@@ -248,6 +252,21 @@ export async function runPipeline(
     }
 
     try {
+        // ── Guardrails: Input scan (pre-pipeline) ─────────────────────────────
+        const inputScan = scanInput(requirement);
+        if (inputScan.warnings.length > 0) {
+            emitEvent(onEvent, {
+                type: 'guardrail_warning',
+                stage: 'input',
+                output: `🛡️ Input guardrails: ${inputScan.warnings.join(' | ')}`,
+                guardrailWarnings: inputScan.warnings,
+                timestamp: new Date().toISOString(),
+            });
+            auditLog.log({ eventType: 'guardrail_warning', stage: 'input', metadata: { warnings: inputScan.warnings, patterns: inputScan.detectedPatterns.length } });
+        }
+        // Use sanitized input (PII redacted) for the pipeline
+        const sanitizedRequirement = inputScan.sanitized;
+
         // ── Enhancement 1: Intent Classification & Routing ─────────────────────
         emitEvent(onEvent, {
             type: 'stage_start',
@@ -758,14 +777,14 @@ export async function runPipeline(
         if (!skip('testing-agent') && !completedStages.includes('tests')) {
             emitEvent(onEvent, {
                 type: 'parallel_group_start',
-                agents: ['testing-agent'],
+                agents: ['testing-agent', 'documentation-agent'],
                 timestamp: new Date().toISOString(),
-                output: '⚡ Starting parallel execution: Testing Agent',
+                output: '⚡ Starting parallel execution: Testing Agent + Documentation Agent',
             });
 
-            auditLog.log({ eventType: 'parallel_group_start', metadata: { agents: ['testing-agent'] } });
+            auditLog.log({ eventType: 'parallel_group_start', metadata: { agents: ['testing-agent', 'documentation-agent'] } });
 
-            const [testingOutcome] = await Promise.allSettled([
+            const [testingOutcome, docOutcome] = await Promise.allSettled([
                 withRetry(
                     () => runTestingAgent(
                         codeResult?.output || requirementsOutput || requirement,
@@ -775,6 +794,17 @@ export async function runPipeline(
                     ),
                     'testing-agent',
                     'testing',
+                    onEvent
+                ),
+                withRetry(
+                    () => runDocumentationAgent(
+                        codeResult?.output || requirementsOutput || requirement,
+                        requirementsOutput || requirement,
+                        context,
+                        runtime
+                    ),
+                    'documentation-agent',
+                    'documentation',
                     onEvent
                 ),
             ]);
@@ -812,12 +842,36 @@ export async function runPipeline(
 
             emitEvent(onEvent, {
                 type: 'parallel_group_complete',
-                agents: ['testing-agent'],
+                agents: ['testing-agent', 'documentation-agent'],
                 timestamp: new Date().toISOString(),
                 output: '✅ Parallel execution complete',
             });
 
-            auditLog.log({ eventType: 'parallel_group_complete', metadata: { agents: ['testing-agent'] } });
+            // Handle documentation agent result
+            const docResult = docOutcome.status === 'fulfilled' ? docOutcome.value : null;
+            if (docResult && docResult.status !== 'error') {
+                emitEvent(onEvent, {
+                    type: 'stage_complete',
+                    stage: 'documentation',
+                    agentName: 'documentation-agent',
+                    status: 'complete',
+                    output: docResult.output,
+                    model: docResult.model,
+                    latencyMs: docResult.latencyMs,
+                    timestamp: new Date().toISOString(),
+                });
+                auditLog.log({
+                    eventType: 'stage_complete',
+                    stage: 'documentation',
+                    agentName: 'documentation-agent',
+                    output: docResult.output,
+                    latencyMs: docResult.latencyMs,
+                });
+                results['documentation'] = docResult;
+                completedStages.push('documentation');
+            }
+
+            auditLog.log({ eventType: 'parallel_group_complete', metadata: { agents: ['testing-agent', 'documentation-agent'] } });
 
             await delay(INTER_AGENT_DELAY_MS);
         }
@@ -879,6 +933,50 @@ export async function runPipeline(
                     results['debt-scan'] = debtResult;
                 }
             } catch { /* non-fatal — debt scan is always optional */ }
+        }
+
+        // ── Loop Engineering: Reflection Agent (post-pipeline analysis) ────────
+        let reflectionReport = undefined;
+        try {
+            const reflectionResult = await runReflectionAgent(
+                auditLog.getEvents(),
+                results,
+                detectedLanguage,
+                runtime
+            );
+            if (reflectionResult.status === 'complete') {
+                reflectionReport = (reflectionResult as { reflectionReport?: unknown }).reflectionReport;
+                emitEvent(onEvent, {
+                    type: 'reflection_complete',
+                    stage: 'reflection',
+                    agentName: 'reflection-agent',
+                    output: `🪞 Reflection: ${reflectionResult.output.slice(0, 200)}...`,
+                    timestamp: new Date().toISOString(),
+                });
+                auditLog.log({
+                    eventType: 'reflection_complete',
+                    stage: 'reflection',
+                    agentName: 'reflection-agent',
+                    output: reflectionResult.output,
+                    latencyMs: reflectionResult.latencyMs,
+                });
+                results['reflection'] = reflectionResult;
+            }
+        } catch { /* non-fatal — reflection is always optional */ }
+
+        // ── Guardrails: Output scan (post-pipeline) ───────────────────────────
+        if (codeResult?.output) {
+            const outputScan = scanOutput('developer', codeResult.output);
+            if (outputScan.warnings.length > 0) {
+                emitEvent(onEvent, {
+                    type: 'guardrail_warning',
+                    stage: 'output',
+                    output: `🛡️ Output guardrails: ${outputScan.warnings.join(' | ')}`,
+                    guardrailWarnings: outputScan.warnings,
+                    timestamp: new Date().toISOString(),
+                });
+                auditLog.log({ eventType: 'guardrail_warning', stage: 'output', metadata: { warnings: outputScan.warnings, issues: outputScan.detectedIssues.length } });
+            }
         }
 
         return { success: true, results, context, checkpointId, routeDecision, auditLog, debtReport, complianceReport, detectedLanguage };

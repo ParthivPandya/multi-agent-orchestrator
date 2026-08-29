@@ -14,7 +14,9 @@ export type AgentName =
   | 'deployment-agent'
   | 'product-manager'
   | 'ux-designer'
-  | 'router-agent';
+  | 'router-agent'
+  | 'reflection-agent'
+  | 'documentation-agent';
 
 export interface AgentResult {
   agentName: AgentName;
@@ -189,7 +191,9 @@ export interface AuditEvent {
     | 'retry_attempt' | 'iteration_info'
     | 'hitl_requested' | 'hitl_resolved'
     | 'security_blocked' | 'delivery_action'
-    | 'validation_error' | 'parallel_group_start' | 'parallel_group_complete';
+    | 'validation_error' | 'parallel_group_start' | 'parallel_group_complete'
+    | 'guardrail_warning' | 'budget_warning' | 'self_heal_start'
+    | 'reflection_complete' | 'eval_complete';
   stage?: string;
   agentName?: string;
   input?: string;
@@ -234,7 +238,12 @@ export interface PipelineEvent {
   | 'parallel_group_start'
   | 'parallel_group_complete'
   | 'validation_error'
-  | 'memory_loaded';
+  | 'memory_loaded'
+  | 'guardrail_warning'
+  | 'budget_warning'
+  | 'self_heal_start'
+  | 'reflection_complete'
+  | 'eval_complete';
   stage?: string;
   agentName?: AgentName;
   status?: AgentStatus;
@@ -281,6 +290,11 @@ export interface PipelineEvent {
   complianceReport?: unknown;
   detectedLanguage?: string;
   auditLog?: string;
+  // Guardrails-specific
+  guardrailWarnings?: string[];
+  budgetRemaining?: number;
+  // Eval-specific
+  evalScore?: { overall: number; dimensions: Record<string, number> };
 }
 
 // API Request/Response types
@@ -429,5 +443,23 @@ export const AGENT_CONFIGS: Record<AgentName, AgentConfig> = {
     icon: '🎨',
     color: '#ec4899',
     maxTokens: 2048,
+  },
+  'reflection-agent': {
+    name: 'reflection-agent',
+    displayName: 'Reflection Agent',
+    description: 'Analyzes pipeline trajectory and generates improvement suggestions',
+    model: 'llama-3.1-8b-instant',
+    icon: '🪞',
+    color: '#a78bfa',
+    maxTokens: 2048,
+  },
+  'documentation-agent': {
+    name: 'documentation-agent',
+    displayName: 'Documentation Agent',
+    description: 'Generates README, API docs, and JSDoc from generated code',
+    model: 'llama-3.1-8b-instant',
+    icon: '📝',
+    color: '#2dd4bf',
+    maxTokens: 3072,
   },
 };

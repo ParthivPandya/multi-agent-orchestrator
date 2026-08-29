@@ -25,16 +25,18 @@ export type BuiltInFlowName = 'standard' | 'quick-fix' | 'plan-only' | 'code-rev
 export const BUILT_IN_FLOWS: Record<BuiltInFlowName, FlowDefinition> = {
     'standard': {
         name: 'Standard Pipeline',
-        description: 'Full 7-agent pipeline: Analyst → Planner → Developer → Reviewer → Security → Tester → Deployer',
-        version: '3.0',
+        description: 'Full 9-agent pipeline: Analyst → Planner → Developer → Reviewer → Security → Tester + Doc (parallel) → Deployer → Reflection',
+        version: '4.0',
         agents: [
             { id: 'a1', agentName: 'requirements-analyst', label: 'Requirements Analyst', enabled: true },
             { id: 'a2', agentName: 'task-planner', label: 'Task Planner', enabled: true },
             { id: 'a3', agentName: 'developer', label: 'Developer', enabled: true },
             { id: 'a4', agentName: 'code-reviewer', label: 'Code Reviewer', enabled: true },
             { id: 'a7', agentName: 'security-reviewer', label: 'Security Reviewer', enabled: true },
-            { id: 'a5', agentName: 'testing-agent', label: 'Testing Agent', enabled: true },
+            { id: 'a5', agentName: 'testing-agent', label: 'Testing Agent', enabled: true, parallelGroup: 'test-doc' },
+            { id: 'a8', agentName: 'documentation-agent', label: 'Documentation Agent', enabled: true, parallelGroup: 'test-doc' },
             { id: 'a6', agentName: 'deployment-agent', label: 'Deployment Agent', enabled: true },
+            { id: 'a9', agentName: 'reflection-agent', label: 'Reflection Agent', enabled: true },
         ],
     },
     'quick-fix': {

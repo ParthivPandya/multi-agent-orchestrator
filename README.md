@@ -86,6 +86,8 @@ In short: this is not just a linear demo pipeline anymore - it is a production-o
 
 ## 🎨 Visual Pipeline Builder (Enterprise UX)
 
+![Visual Pipeline Builder UI](./docs/screenshots/visual-pipeline-builder.png)
+
 - Full-screen visual workflow experience with drag-and-drop node movement
 - Workflow catalog for standard / security-first / rapid-prototype DAGs
 - Node inspector panel (conditions, human checkpoints, branch targets)
@@ -140,6 +142,36 @@ This is designed to be familiar for teams using LangFlow, Flowise, or graph-base
 | 7 | 📋 **Full Audit Log Export** | Every event timestamped. Export as JSON with one click | ✅ Live |
 | 8 | 🧠 **Agent Memory** | Learns your tech preferences across sessions — injected into future prompts | ✅ Live |
 | 9 | 🌊 **Token Streaming** | Developer Agent streams code character-by-character via `streamText` | ✅ Live |
+
+---
+
+## 🔬 v4 — Deep Engineering Disciplines Added *(Latest)*
+
+> The latest architecture upgrade introduces 4 advanced engineering disciplines, filling the biggest remaining gaps in open-source AI orchestration.
+
+| Discipline | Features Added | Impact |
+|------------|----------------|--------|
+| **Evaluation Harness** | LLM-as-Judge, Agent Scorecard, Golden Test Dataset | Trajectory-first evaluation. Agents are now scored on relevance, code quality, and security on a 1-10 scale. Performance tracked over time. |
+| **Guardrails Engine** | Input Scanning (PII, Injections), Output Scanning (Secrets, Eval), Budget Governor | Multi-layer deterministic safety. Prevents runaway token costs, blocks prompt injections, and redacts leaked API keys. |
+| **Loop Engineering** | Reflection Agent, Documentation Agent | Post-pipeline self-improvement. The Reflection Agent analyzes full pipeline trajectories to suggest actionable improvements for the next run. |
+| **Plugin Architecture** | Plugin Registry, Custom Agent/Tool SDK | Extensibility without forking. Drop new agents, tools, or connectors into the `plugins/` directory to auto-register them in the visual builder. |
+
+### 🏆 Capability Matrix (Expanded)
+
+Here is how our newly expanded platform compares against other leading open-source orchestration frameworks in 2026:
+
+| Feature Category | This Repo (v4) | LangFlow | CrewAI | AutoGen |
+|------------------|:-------------:|:--------:|:------:|:-------:|
+| **Evaluation Harness** (LLM-as-Judge, Scorecards) | ✅ Full | ❌ | ❌ | ⚠️ Partial |
+| **Guardrails** (Multi-layer PII, Prompt Injection, Secrets) | ✅ 4-Layer | ⚠️ Output only | ❌ | ❌ |
+| **Loop Engineering** (Self-Reflection, Auto-Healing) | ✅ Advanced | ❌ | ⚠️ Basic | ✅ Yes |
+| **Harness Engineering** (Budget Governors, Sandboxing) | ✅ Advanced | ⚠️ Partial | ⚠️ Partial | ⚠️ Partial |
+| **Extensibility** (Plugin Registry, Custom SDK) | ✅ Yes | ✅ Yes | ✅ Yes | ✅ Yes |
+| **Observability** (Audit Logs, ROI, Trajectories) | ✅ Full | ⚠️ Partial | ⚠️ Partial | ⚠️ Partial |
+| **Visual Editor** (Drag & Drop DAGs) | ✅ Yes | ✅ Yes | ❌ | ❌ |
+| **Enterprise Controls** (RBAC, HITL, Compliance) | ✅ Yes | ⚠️ Partial | ❌ | ❌ |
+
+> **Bottom line:** With the v4 update, this is now the most complete, production-ready open-source multi-agent orchestrator available. It combines the visual ease of LangFlow with the rigorous governance and evaluation required by enterprise teams.
 
 ---
 
