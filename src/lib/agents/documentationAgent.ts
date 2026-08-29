@@ -49,10 +49,10 @@ export async function runDocumentationAgent(
     const prompt = buildDocPrompt(code, requirements, context);
 
     const response = await generateText({
-      model: runtimeModel.model,
+      model: runtimeModel.model as import('ai').LanguageModel,
       system: DOCUMENTATION_SYSTEM_PROMPT,
       prompt,
-      maxTokens: config.maxTokens,
+      maxOutputTokens: config.maxTokens,
       temperature: 0.3,
     });
 

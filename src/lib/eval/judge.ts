@@ -67,10 +67,10 @@ ${agentOutput.slice(0, 6000)}
 Evaluate this output. Return ONLY the JSON score object.`;
 
     const response = await generateText({
-      model: runtimeModel.model,
+      model: runtimeModel.model as import('ai').LanguageModel,
       system: JUDGE_SYSTEM_PROMPT,
       prompt,
-      maxTokens: 1024,
+      maxOutputTokens: 1024,
       temperature: 0.1, // Low temperature for consistent scoring
     });
 

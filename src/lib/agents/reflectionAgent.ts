@@ -77,10 +77,10 @@ export async function runReflectionAgent(
     const pipelineSummary = buildPipelineSummary(auditEvents, results, detectedLanguage);
 
     const response = await generateText({
-      model: runtimeModel.model,
+      model: runtimeModel.model as import('ai').LanguageModel,
       system: REFLECTION_SYSTEM_PROMPT,
       prompt: pipelineSummary,
-      maxTokens: config.maxTokens,
+      maxOutputTokens: config.maxTokens,
       temperature: 0.3,
     });
 

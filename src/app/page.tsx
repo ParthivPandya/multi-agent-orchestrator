@@ -37,6 +37,8 @@ const INITIAL_STATUSES: Record<AgentName, AgentStatus> = {
   'deployment-agent': 'idle',
   'product-manager': 'idle',
   'ux-designer': 'idle',
+  'reflection-agent': 'idle',
+  'documentation-agent': 'idle',
 };
 
 // Map stage names to agent names
