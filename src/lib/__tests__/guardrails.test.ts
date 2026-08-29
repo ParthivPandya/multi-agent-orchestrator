@@ -88,7 +88,7 @@ describe('Output Guardrails — scanOutput()', () => {
   });
 
   it('detects AWS key leaks', () => {
-    const result = scanOutput('developer', 'const key = "AKIAIOSFODNN7EXAMPLE1";');
+    const result = scanOutput('developer', 'const key = "AKIAIOSFODNN7LEAKEDKEY";');
     expect(result.safe).toBe(false);
     expect(result.detectedIssues.some(i => i.pattern === 'AWS Access Key')).toBe(true);
   });
@@ -120,7 +120,7 @@ describe('Output Guardrails — scanOutput()', () => {
   });
 
   it('detects connection string leaks', () => {
-    const result = scanOutput('developer', 'const db = "mongodb://admin:password123@prod.example.com:27017/mydb";');
+    const result = scanOutput('developer', 'const db = "mongodb://admin:password123@prod.mydatabase.com:27017/mydb";');
     expect(result.detectedIssues.some(i => i.pattern === 'Connection String')).toBe(true);
   });
 
